@@ -37,7 +37,11 @@ require_once 'functions.php';
     <div class="map-and-description" style="flex: 1; max-width: 700px;">
       <div id="map"></div>
       <div id="text-container">
-        <p>To count as a truly satisfying end station, the station must not only be at <strong>the end of its own line</strong>, but must also <strong>lack any interchange</strong> to other S-Bahn or U-Bahn lines.</p>
+        <p>A truly satisfying end station is one that:</p>
+          <ul>
+              <li>is at <strong>the end of its own line</strong>;</li>
+              <li><strong>lacks any interchange</strong> to other S-Bahn or U-Bahn lines.</li>
+          </ul>
       </div>
     </div>
 
