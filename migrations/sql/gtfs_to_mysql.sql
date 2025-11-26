@@ -1,3 +1,7 @@
+DROP DATABASE IF EXISTS vbb_gtfs;
+CREATE DATABASE vbb_gtfs;
+
+USE vbb_gtfs;
 
 DROP TABLE IF EXISTS agency;
 

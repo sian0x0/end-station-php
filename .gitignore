@@ -1,10 +1,10 @@
 create-db.php
 index_WIP_backup_before_adding_users.php
-vars.php
+config/vars.php
 testquery.php
 index_testlogin.php
 data/
 .vscode/settings.json
-sql/create_visits.sql
-sql/gtfs_to_mysql backup.sql
-sql/gtfs_to_mysql_S_U_only.sql
+migrations/sql/create_visits.sql
+migrations/sql/gtfs_to_mysql backup.sql
+migrations/sql/gtfs_to_mysql_S_U_only.sql
