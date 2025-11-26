@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once 'vars.php';      // define/include variables before functions
-require_once 'functions.php'; 
+require_once '../config/vars.php';      // define/include variables before functions
+require_once '../functions.php';
 ?>
 
 <!DOCTYPE html>
@@ -12,7 +12,7 @@ require_once 'functions.php';
   <title>EndStation Berlin</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="main.css" />
+  <link rel="stylesheet" href="assets/css/main.css" />
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.vectorgrid/dist/Leaflet.VectorGrid.bundled.js"></script>
@@ -23,7 +23,7 @@ require_once 'functions.php';
   <p class="subtitle">visit all the end-iest end stations of the S-Bahn and U-Bahn</p>
 
   <div class="php-output">
-    <?php // getGTFS(); ?>
+    <?php getGTFS(); ?>
     <?php $rows = getEnds(); ?>
     <?php echo "<br>INFO: Query completed with " . count($rows) . " rows"; ?>
   </div>

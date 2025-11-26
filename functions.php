@@ -1,9 +1,9 @@
 <?php
 $dsn0 = "mysql:host=localhost";
-$cacheFile = __DIR__ . '/cache/rows.json';
+$cacheFile = __DIR__ . '/data/cache/rows.json';
 require_once 'Auth.php';
-require_once 'index_testlogin.php';
-require_once 'vars.php';
+//require_once 'index_testlogin.php'; #TODO: edited out to bypass login -finish fixing later
+//require_once '../config/vars.php';
 
 /*
  * Fetches GTFS data from VBB
@@ -259,9 +259,9 @@ function generateTableHtml($rows) {
             
             // 2. Service logos
             if ($row['route_type'] == 109) {
-                $tableHtml .= '<img src="img/s-bahn-logo.png" alt="S-Bahn" style="height:22px;">';
+                $tableHtml .= '<img src="assets/img/s-bahn-logo.png" alt="S-Bahn" style="height:22px;">';
             } elseif ($row['route_type'] == 400) {
-                $tableHtml .= '<img src="img/u-bahn-logo.png" alt="U-Bahn" style="height:22px;">';
+                $tableHtml .= '<img src="assets/img/u-bahn-logo.png" alt="U-Bahn" style="height:22px;">';
             } else {
                 $tableHtml .= htmlspecialchars($row['route_type']);
             }
@@ -276,7 +276,7 @@ function generateTableHtml($rows) {
             $lat = htmlspecialchars($row['stop_lat']);
             $lon = htmlspecialchars($row['stop_lon']);
             $directionsUrl = "https://www.google.com/maps/dir/?api=1&destination={$lat},{$lon}&travelmode=transit";
-            $tableHtml .= "<td style='text-align:center;'><button onclick=\"window.open('{$directionsUrl}', '_blank')\"><img height=16px src='./img/directions-transit-32.png'/></button></td>";
+            $tableHtml .= "><img height=16px src=/></button></td>";
 
             // 5. User input
             global $user_id;

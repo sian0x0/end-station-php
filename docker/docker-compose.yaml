@@ -1,0 +1,34 @@
+services:
+
+  apache:
+    build: ./apache/        #build image from the Dockerfile located at this path
+    container_name: apache-endstation
+    ports:
+      - "80:80"
+    volumes:
+      - ../:/var/www/endstation
+    env_file:
+      - .env
+
+  mariadb:
+    image: mariadb:latest   #just use the base image
+    container_name: mariadb #also works as a hostname in php, and Docker handles name resolution to the container where the service is currently running
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    restart: always
+    volumes:
+     - mariadb_data:/var/lib/mysql
+
+  adminer:
+    image: adminer         #just use the base image
+    restart: always
+    ports:
+     - "8080:8080"
+
+volumes:
+  mariadb_data:           #can re-use same name in different projects - Docker prepends project name to the volume
