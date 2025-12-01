@@ -1,12 +1,12 @@
 services:
 
   apache:
-    build: ./apache/        #build image from the Dockerfile located at this path
+    build: docker/apache        #build image from the Dockerfile located at this path
     container_name: apache-endstation
     ports:
       - "80:80"
     volumes:
-      - ../:/var/www/endstation
+      - ./:/var/www/endstation
     env_file:
       - .env
 
@@ -14,15 +14,16 @@ services:
     image: mariadb:latest   #just use the base image
     container_name: mariadb #also works as a hostname in php, and Docker handles name resolution to the container where the service is currently running
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME_MAIN}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
       - "3306:3306"
     restart: always
     volumes:
      - mariadb_data:/var/lib/mysql
+     - ./docker/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql #path in the container where MariaDB looks for init scripts
 
   adminer:
     image: adminer         #just use the base image
