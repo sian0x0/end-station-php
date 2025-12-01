@@ -1,6 +1,7 @@
 <?php
 session_start();
-require_once '../config/vars.php';      // define/include variables before functions
+//require_once '../config/vars.php';      // define/include variables before functions
+require __DIR__ . '/../config/config.php';
 require_once '../functions.php';
 ?>
 
