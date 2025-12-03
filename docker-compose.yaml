@@ -2,6 +2,7 @@ services:
 
   apache:
     build: docker/apache        #build image from the Dockerfile located at this path
+    ## user: "1000:1000" //did not help with permissions issue
     container_name: apache-endstation
     ports:
       - "80:80"
