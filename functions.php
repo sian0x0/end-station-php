@@ -1,9 +1,12 @@
 <?php
-$dsn0 = "mysql:host=localhost";
+//$dsn0 = "mysql:host=localhost"; //old version
+//$dsn0 = "mysql:host=mariadb;port=3306"; //docker version - uses service name instead // removed in favour of env values
+
 $cacheFile = __DIR__ . '/data/cache/rows.json';
+require_once __DIR__ . '/config/config.php';
 require_once 'Auth.php';
-//require_once 'index_testlogin.php'; #TODO: edited out to bypass login -finish fixing later
-//require_once '../config/vars.php';
+//require_once 'index_testlogin.php'; #edited out to bypass login TODO:finish fixing later
+//require_once '../config/vars.php'; #TODO: remove when finished phasing out in favour of .env and config.php
 
 /*
  * Fetches GTFS data from VBB
@@ -19,7 +22,7 @@ function getGTFS() {
     // #TODO: variable return instead of echo - text would be better displayed after function call
     // create function reportOnData() BUT need modTime before fetch process. ALSO pass modTime by reference to allow updating?
     // access the modification date of first file in the zip if one already exists 
-    // #TODO: read http headers instead (keep this as backup?)
+    // #TODO: read http headers instead? (keep this as backup?)
     if (file_exists('data/GTFS.zip')) {
         $zip = new ZipArchive();
         $zip->open('data/GTFS.zip');
@@ -44,12 +47,12 @@ function getGTFS() {
         echo "<p>Looking for new data...";
 
         // store previous data with modTime in filename
-        if (file_exists('data/GTFS.zip')) {
-            file_put_contents('data/GTFS-'. date('Y-m-d', $modTime) . '.zip', fopen('data/GTFS.zip', 'r'));
+        if (file_exists(__DIR__ . '/data/GTFS.zip')) {
+            file_put_contents(__DIR__ . '/data/GTFS-'. date('Y-m-d', $modTime) . '.zip', fopen(__DIR__ . '/data/GTFS.zip', 'r'));
         }
 
         // get new data
-        file_put_contents('data/GTFS.zip', fopen($url, 'r'));
+        file_put_contents(__DIR__ . '/data/GTFS.zip', fopen($url, 'r'));
 
         //create new db
         echo " ...Done.<br> Creating new database, please wait...";
@@ -57,7 +60,7 @@ function getGTFS() {
 
         //update modtime again
         $zip = new ZipArchive();
-        if ($zip->open('data/GTFS.zip') === TRUE) {
+        if ($zip->open(__DIR__ . '/data/GTFS.zip') === TRUE) {
         $firstFileStats = $zip->statIndex(0);
         $modTime = $firstFileStats['mtime'];
         $zip->close();
@@ -73,7 +76,7 @@ function getGTFS() {
 /* TODO: create db function here 
 db (re)creation*/
 function createDB() {
-    global $dsn0, $dsn, $username, $password;
+    //global $dsn0, $dsn, $username, $password; #TODO: delete when removed dsn0 and vars
     $conn = $conn2 = null;   //close any open PDO connections
 
     // Allow extra time for data processing
@@ -82,27 +85,26 @@ function createDB() {
     // comment out for fast testing - 1.3GB!
     // open a connection    // note:w3s claims db name is required for connection, but it is not
     try {
-    $conn = new PDO($dsn0, $username, $password);
-    // set the PDO error mode to exception
+    $conn = new PDO(DSN_NO_DB, DB_USER, DB_PASS);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     echo "Connected successfully";
     } catch(PDOException $e) {
     echo "Connection failed: " . $e->getMessage();
     }
 
-    // create empty db // TODO:find out whether to recreate whole DB / recreate just tables on new data / truncate tables and re-fill / keep adding new data to old with timestamps
-    try {
-        $sql = "CREATE DATABASE IF NOT EXISTS VBB_GTFS";
-        $conn->exec($sql);
-        echo "Database created.";
-    } catch(PDOException $e) {
-        echo "Error creating database: " . $e->getMessage();
-    }
+    // create empty db // TODO:moved this to init file - clean up. also: find out whether to recreate whole DB / recreate just tables on new data / truncate tables and re-fill / keep adding new data to old with timestamps
+//    try {
+//        $sql = "CREATE DATABASE IF NOT EXISTS VBB_GTFS";
+//        $conn->exec($sql);
+//        echo "Database created.";
+//    } catch(PDOException $e) {
+//        echo "Error creating database: " . $e->getMessage();
+//    }
 
     //connect to new test db
-    $conn2 = new PDO($dsn, $username, $password,
+    $conn2 = new PDO(DSN_GTFS, DB_USER, DB_PASS,
         [
-            PDO::MYSQL_ATTR_LOCAL_INFILE => true, // trying this to solve local infile restriction #TODO: explore parameters
+            PDO::MYSQL_ATTR_LOCAL_INFILE => true, // added to solve "local infile" data addition restriction #TODO: explore parameters
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
         ]
     );
@@ -119,15 +121,15 @@ function createDB() {
     // }
 
     //get statements (split by ;) from script one at a time
-    $gtfs_to_sql = file_get_contents('sql/gtfs_to_mysql.sql');
+    $gtfs_to_sql = file_get_contents(__DIR__ . '/migrations/sql/gtfs_to_mysql.sql');
     $statements =  explode(';', $gtfs_to_sql);
     # print_r($statements); //debug
 
-    //unzip gtfs files
-    if (file_exists('data/GTFS.zip')) {
+    //unzip gtfs files #note: first install the PHP zip extension in Apache
+    if (file_exists(__DIR__ . '/data/GTFS.zip')) {
             $zip = new ZipArchive();        // new ZipArchive object (allows use of zip methods)
-            $zip->open('data/GTFS.zip');
-            $zip->extractTo("data/txt_latest/");
+            $zip->open(__DIR__ . '/data/GTFS.zip');
+            @$zip->extractTo(__DIR__ . '/data/txt_latest');
     }
 
     //load data from unzipped files into db, using exec() to execute each statement
@@ -166,7 +168,7 @@ function getEnds() {
             echo "<br>INFO: Database connection successful</p>";
             
             // create table for results in database itself
-            $sqlFile = 'sql/query_endstations.sql';            
+            $sqlFile = __DIR__ . '/migrations/sql/query_endstations.sql';
             if (!file_exists($sqlFile)) {
                 echo "<br>ERROR: SQL file not found: $sqlFile";
                 return [];
@@ -212,7 +214,7 @@ function getEnds0() {
             ]);
             // (re)create endstations table for results in the database itself
             $conn->exec('DROP TABLE IF EXISTS endstations');
-            $sql_create_endstations = file_get_contents('sql/query_endstations.sql');
+            $sql_create_endstations = file_get_contents(__DIR__ . '/migrations/sql/query_endstations.sql');
             $conn->exec($sql_create_endstations);
             // then only get the results each time
             $stmt = $conn->query('SELECT * FROM endstations');

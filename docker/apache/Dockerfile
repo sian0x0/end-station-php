@@ -4,7 +4,7 @@ LABEL authors="sian0x0"
 RUN apt-get update && apt-get install -y libzip-dev && rm -rf /var/lib/apt/lists/*
 RUN docker-php-ext-install zip pdo pdo_mysql
 
-COPY ./endstation.conf /etc/apache2/sites-available/endstation.conf
+COPY endstation.conf /etc/apache2/sites-available/endstation.conf
 
 RUN a2dissite 000-default.conf && \
     a2ensite endstation.conf && \
