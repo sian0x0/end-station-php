@@ -240,7 +240,6 @@ function getEnds0() {
  * @return string HTML table of results
  */
 function generateTableHtml($rows) {
-    $superfluousStrings = [" Bhf"," (Berlin)"," (TF)"];
     $tableHtml = '<table>
         <tr>
             <th>Route</th>
