@@ -21,7 +21,7 @@ try {
     // SQL to create a database
     $sql = "CREATE DATABASE IF NOT EXISTS test_database";
     $conn->exec($sql);      // TODO: read about exec() and when to use
-    echo "Database created.";
+    echo "DatabaseMain created.";
 } catch (PDOException $e) {
     echo "Error creating database: " . $e->getMessage();
 }

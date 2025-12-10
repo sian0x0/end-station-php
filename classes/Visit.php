@@ -36,7 +36,10 @@ class Visit
     {
         #TODO - after array changed to id-indexed array
     }
+    public static function loadData()
+    {
 
+    }
 
 // single-property getters and setters
 

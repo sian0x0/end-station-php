@@ -1,6 +1,6 @@
 <?php
 
-// get constants from .env and concatenate function using define() (not allowed otherwise)
+// get constants from .env and concatenate function using define() (not allowed using normal assignment)
 define('DB_HOST', getenv('DB_HOST'));
 define('DB_PORT', getenv('DB_PORT'));
 define('DB_USER', getenv('DB_USER'));

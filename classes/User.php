@@ -35,7 +35,7 @@ class User
         return [
             new User(
                 userName: 'admin',
-                role: 0,
+                role: 1,
                 profilePicture: '/public/img/assets/0.jpg',
                 password: 'hashed_password_123',
                 joinedDate: '2023-05-15',
@@ -43,7 +43,7 @@ class User
             ),
             new User(
                 userName: 'lou',
-                role: 1,
+                role: 2,
                 profilePicture: 'public/assets/img/profile/1.jpg',
                 password: 'hashed_password_456',
                 joinedDate: '2023-07-22',
@@ -51,7 +51,7 @@ class User
             ),
             new User(
                 userName: 'vullnet',
-                role: 1,
+                role: 2,
                 profilePicture: '/public/img/assets/2.jpg',
                 password: 'hashed_password_789',
                 joinedDate: '2023-09-10',
@@ -83,19 +83,22 @@ class User
 
     private static function readUsersJSON()
     {
-        $usersAssocArray = json_decode(file_get_contents('data/cache/users.json'), true);
-        //clear central list of objects first
-        self::$usersStaticArr = [];
-        foreach ($usersAssocArray as $user) {
-            $u = new User(
-                $user['id'],
-                $user['name'],
-                $user['role'],
-                $user['profilePicture'],
-                $user['password'],
-                $user['joinedDate'],
-            );
-            //$u->setUserVisits(); // #TODO: decide whether to implement here or just via DB
+        if (file_exists('data/cache/users.json'))
+        {
+            $usersAssocArray = json_decode(file_get_contents('data/cache/users.json'), true);
+            //clear central list of objects first
+            self::$usersStaticArr = [];
+            foreach ($usersAssocArray as $user) {
+                $u = new User(
+                    $user['id'],
+                    $user['name'],
+                    $user['role'],
+                    $user['profilePicture'],
+                    $user['password'],
+                    $user['joinedDate'],
+                );
+                //$u->setUserVisits(); // #TODO: decide whether to implement here or just via DB
+            }
         }
     }
 

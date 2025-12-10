@@ -14,9 +14,12 @@ class Station
     private string $shapeId;
     private array $line;
     static array $stationsStaticArr;
+    private static string $cacheFile = __DIR__ . '/../data/cache/rows.json';
+
+    public static array $superfluousStrings = [" Bhf"," (Berlin)"," (TF)"];
 
     /**
-     * @param string $routeShortName Route name (human-readable name)
+     * @param string $routeShortName Route name (human-readable name, e.g. S42)
      * @param string $tripHeadsign Used as station name (destination as written on trains)
      * @param string $parentStation Used as station ID (collects all stops at one station)
      * @param int $routeType Route transit type (U or S-Bahn)
@@ -43,6 +46,7 @@ class Station
         $this->stationId = self::deriveStationID($parentStation);
         $this->stationName = self::deriveStationName($tripHeadsign);
         $this->routeShortName = $routeShortName;
+        $this->tripHeadsign = $tripHeadsign;
         $this->parentStation = $parentStation;
         $this->routeType = $routeType;
         $this->routeColor = $routeColor;
@@ -62,8 +66,7 @@ class Station
 
     private static function deriveStationName(string $tripHeadsign): string
     {
-        $superfluousStrings = [" Bhf"," (Berlin)"," (TF)"];
-        return trim($tripHeadsign);
+        return str_replace(self::$superfluousStrings, "", $tripHeadsign);
     }
 
 
@@ -179,10 +182,111 @@ class Station
         $this->line = $line;
     }
 //other getters and CRUD functions
-    public function loadData()
-    {
 
+    public static function loadJSON(): ?array
+    {
+        if (file_exists(self::$cacheFile)) {
+
+            $stationsArray = json_decode(file_get_contents(self::$cacheFile), true);
+            //echo "<br>INFO: Cache file exists, reading from cache";
+
+            //clear central list of objects first
+            Station::$stationsStaticArr = [];
+
+            //create a new object from each item
+            foreach ($stationsArray as $s) {
+                $sNew = new Station(
+                    $s['route_short_name'],
+                    $s['trip_headsign'],
+                    $s['parent_station'],
+                    $s['route_type'],
+                    $s['route_color'],
+                    $s['route_text_color'],
+                    $s['stop_lat'],
+                    $s['stop_lon'],
+                    $s['shape_id'],
+                    [$s['line']] // Convert JSON string to array
+                );
+            }
+            return $stationsArray;
+        } else {
+            return null;
+        }
     }
 
 
+    public static function loadData() : ?array
+    {
+        //TODO: read from DB also
+        $rows = self::loadJSON();
+        return $rows;
+    }
+
+//html generators
+    public static function generateTableHtml($rows): string {
+        $tableHtml = '<table>
+        <tr>
+            <th>Route</th>
+            <th></th>
+            <th>End station</th>
+            <th>Go!</th>';
+        global $user_id;
+        if (isset($user_id)) {
+            $tableHtml .= '<th>visited</th>';}
+        $tableHtml .= '</tr>';
+
+        //generate columns 1-4, or 1-5 if user logged in
+        if (count($rows) > 0) {
+            foreach ($rows as $row) {
+                // 1. Route names and colors
+                $tableHtml .= "<tr>"
+                    . "<td bgcolor='" . htmlspecialchars($row['route_color'])
+                    . "' style='text-align:center;color:#" . htmlspecialchars($row['route_text_color']) . ";'>"
+                    . htmlspecialchars($row['route_short_name']) . " -" . $row['direction_id'] . "</td>"
+                    . "<td style='text-align:center;'>";
+
+                // 2. Service logos
+                if ($row['route_type'] == 109) {
+                    $tableHtml .= '<img src="assets/img/s-bahn-logo.png" alt="S-Bahn" style="height:22px;">';
+                } elseif ($row['route_type'] == 400) {
+                    $tableHtml .= '<img src="assets/img/u-bahn-logo.png" alt="U-Bahn" style="height:22px;">';
+                } else {
+                    $tableHtml .= htmlspecialchars($row['route_type']);
+                }
+
+                // 3. Station name (cleaned Headsign) formatted depending on transit type
+                $stationName = str_replace(self::$superfluousStrings, "", $row['trip_headsign']);
+                $tableHtml .= "</td>"
+                    . "<td class='destination-cell' style='color:" . ($row['route_type'] == 400 ? '#f5f5f5' : 'yellow') . ";'>"
+                    . "<a href ='index.php?view=showStation&stationName=$stationName'> "
+                    . htmlspecialchars($stationName)
+                    . "</a></td>";
+
+                // 4. Google directions button
+                $lat = htmlspecialchars($row['stop_lat']);
+                $lon = htmlspecialchars($row['stop_lon']);
+                $directionsUrl = "https://www.google.com/maps/dir/?api=1&destination={$lat},{$lon}&travelmode=transit";
+                $directionsTitle='plan journey on Google Maps';
+                $tableHtml .= "<td><a href='$directionsUrl' target='_blank' title='$directionsTitle'><img height=16px src='./assets/img/directions-transit-32.png'></a></td>";
+
+                // 5. User visited staus if logged in
+                $tableHtml .= "<td>";
+                $userHasVisited = rand(0,1); //#TODO test display of different states before making checker function #TEST
+                global $user_id;
+                if(isset($user_id)) {
+                    if ($userHasVisited == 1) {
+                    $tableHtml .= "X";}
+                }
+                $tableHtml .= "</td>";
+
+                // 6. Close the row
+                $tableHtml .= "</tr>";
+            }
+        } else {
+            $tableHtml .= "<tr><td colspan='4'>0 results</td></tr>";
+        }
+
+        $tableHtml .= '</table>';
+        return $tableHtml;
+    }
 }

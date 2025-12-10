@@ -1,17 +1,12 @@
 <?php
 ?>
-<!--debug: show data retrieval info-->
-<div class="php-output">
-    <?php //getGTFS(); ?>
-    <?php $rows = getEnds(); ?>
-    <?php echo "<br>INFO: Query completed with " . count($rows) . " rows"; ?>
-</div>
+
 
 <div class="container">
 
 <!--display: station list-->
     <div class="table-wrapper" tabindex="0" aria-label="Table of End Stations">
-        <?php echo generateTableHtml($rows); ?>
+        <?php echo Station::generateTableHtml($rows); ?>
     </div>
 
 <!--display: map and intro text-->
