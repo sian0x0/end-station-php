@@ -1,5 +1,6 @@
-USE vbb_gtfs;
+USE VBB_GTFS;
 
+## DROP TABLE endstations;
 CREATE TABLE endstations AS
 WITH 
 -- 1. Get only S-Bahn and U-Bahn Services routes run by the agencies BVG and Berlin S-Bahn

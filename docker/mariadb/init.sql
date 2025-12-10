@@ -77,13 +77,13 @@ DROP TABLE IF EXISTS stop_times;
 
 CREATE TABLE `stop_times` (
                               trip_id VARCHAR(50),
-                              arrival_time VARCHAR(8),
-                              departure_time VARCHAR(8),
                               stop_id VARCHAR(50),
                               stop_sequence INT(11),
                               pickup_type INT(2),
                               drop_off_type INT(2),
                               stop_headsign VARCHAR(255),
+                              arrival_time VARCHAR(8),
+                              departure_time VARCHAR(8),
                               KEY `trip_id` (trip_id),
                               KEY `stop_id` (stop_id),
                               KEY `stop_sequence` (stop_sequence)
@@ -141,8 +141,15 @@ CREATE TABLE `trips` (
                          KEY `shape_id` (shape_id)
 );
 
+##TODO:create table here instead
+##USE endstation_db;
+
+
 ## create users and grant privileges
 GRANT ALL PRIVILEGES ON endstation_db.* TO 'user101'@'%';
 GRANT ALL PRIVILEGES ON VBB_GTFS.* TO 'user101'@'%';
 GRANT CREATE, DROP ON *.* TO 'user101'@'%';
 FLUSH PRIVILEGES;
+
+
+##data is inserted by file gtfs_to_mysql.sql...

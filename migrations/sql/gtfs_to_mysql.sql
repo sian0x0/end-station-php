@@ -1,6 +1,4 @@
-## note: creation is now done in init.sql/
-# DROP DATABASE IF EXISTS vbb_gtfsVBB_GTFS;
-# CREATE DATABASE VBB_GTFS;
+## note: creation itself is now done in init.sql/
 
 LOAD DATA LOCAL INFILE '/var/www/endstation/data/txt_latest/agency.txt' INTO TABLE agency FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\r\n' IGNORE 1 LINES;
 
