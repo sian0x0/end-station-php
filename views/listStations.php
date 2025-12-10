@@ -12,7 +12,6 @@ $rows = json_decode(file_get_contents($jsonFile), true) ?? [];
     <link rel="stylesheet" href="../public/assets/css/main.css">
 </head>
 <body>
-    <?php include 'nav.php'; ?>
     <h2>Stations</h2>
     <?php if (empty($rows)): ?>
         <p>No stations found.</p>

@@ -4,7 +4,6 @@ require __DIR__ . '/../config/config.php';
 //require_once '../functions.php';      //TODO: replace with database class? methods and delete
 //require_once 'Auth.php';
 //require_once 'index_testlogin.php'; #edited out to bypass login TODO:finish fixing later
-//require_once '../config/vars.php'; #TODO: remove when finished phasing out in favour of .env and config.php
 spl_autoload_register(function (string $class) {
     include '../classes/' . $class . '.php';
 });
@@ -24,6 +23,8 @@ $user_id = 2; //for testing login features without login #TEST
     <script src="https://unpkg.com/leaflet.vectorgrid/dist/Leaflet.VectorGrid.bundled.js"></script>
 </head>
 <body>
+<?php include '../views/nav.php'; ?>
+<div class="main">
 <a href="/"><h1>EndStation Berlin</h1></a>
 <p class="subtitle">visit all the end-iest end stations of the S-Bahn and U-Bahn</p>
 
@@ -55,13 +56,8 @@ $user_id = 2; //for testing login features without login #TEST
 
 
 <?php
-
-
-
-
-
 // retrieve arrays of objects for each object type, using dummy object to call non-static methods
-
+//TODO:change to be db values
 Station::loadData();        // loads from JSON
 User::loadData();           // load hard-coded test values if static array is empty, otherwise from JSON
 Visit::loadData();
@@ -89,6 +85,6 @@ if ($view == 'addVisit') {
 //load the correct view
 include '../views/' . $view . '.php';
 ?>
-
+</div>
 </body>
 </html>

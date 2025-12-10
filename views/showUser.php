@@ -1,5 +1,4 @@
 <?php
-include 'nav.php';
 spl_autoload_register(function ($class) {
     include '../classes/' . $class . '.php';
 });
@@ -7,7 +6,7 @@ spl_autoload_register(function ($class) {
 //$id = $_GET['id'];
 $id = 2; //draft test
 
-User::generateSampleUsers();
+//User::generateSampleUsers(); //now done in db
 
 foreach (User::getUsersStaticArr() as $user) {
     if ($user->getId() == $id) {
