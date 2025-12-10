@@ -1,5 +1,5 @@
 USE VBB_GTFS;
-
+##TODO:check updated VBB data column order
 ## DROP TABLE endstations;
 CREATE TABLE endstations AS
 WITH 

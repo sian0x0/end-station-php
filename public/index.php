@@ -27,19 +27,17 @@ $user_id = 2; //for testing login features without login #TEST
 <a href="/"><h1>EndStation Berlin</h1></a>
 <p class="subtitle">visit all the end-iest end stations of the S-Bahn and U-Bahn</p>
 
-
-
 <div class="php-output"> <!--debug: show data retrieval info-->
     <?php
     //// Get data ////
-    // 1. build the GTFS database (creation happens already in init)
-    DatabaseGTFS::createDB();
+    // 1. build the GTFS database (creation happens already in init) - needs CTE fix, skip for now
+    //DatabaseGTFS::createDB();
 
-    // 2. build the main database // populateDB main database from GTFS database
-    DatabaseMain::populateTableDefaults();
+    // 2. populateDB main database from GTFS database
+    DatabaseMain::populateTableDefaults(Station::loadJSON());
 
     //2a. load straight from JSON into DB if GTFS db not working (as currently) #TODO
-    //$rows = Station::loadData();
+    $rows = Station::loadData();
     //DatabaseMain::loadDefaultEndtationsFromCache($rows);
     //DatabaseMain::populateTableDefaults();
 

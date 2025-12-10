@@ -14,7 +14,7 @@ class DatabaseMain
 
         $conn = new PDO($dsn, DB_USER, DB_PASS);
 
-        //use exec() ina  loop to execute each statement
+        //use exec() in a loop to execute each statement
         foreach ($statements as $statement) {
             $statement = trim($statement);
             if (!empty($statement)) {
@@ -31,15 +31,17 @@ class DatabaseMain
     /**
      * Populates the main database from default data (GTFS DB and hard coded)
      */
-    public static function populateTableDefaults() : void
+    public static function populateTableDefaults(array $rows = null) : void
     {
         self::executeSqlFile(DSN_NO_DB, 'create_endstations_db.sql');
+        if ($rows) {
+            self::populateDefaultEndtationsFromCache($rows);
+        }
     }
 
-    public static function loadDefaultEndtationsFromCache(array $rows): void {
+    public static function populateDefaultEndtationsFromCache(array $rows): void {
         $conn = new PDO(DSN_MAIN, DB_USER, DB_PASS);
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
         $sql = "
         INSERT INTO endstation_db.endstations (
             route_short_name,
