@@ -2,20 +2,10 @@
 $jsonFile = '../data/cache/rows.json';
 $rows = json_decode(file_get_contents($jsonFile), true) ?? [];
 //print_r($data);
-#TODO: replace with function and always read from the json (speed)
-?>
-
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Stations</title>
-    <link rel="stylesheet" href="../public/assets/css/main.css">
-</head>
-<body>
-    <h2>Stations</h2>
-    <?php if (empty($rows)): ?>
-        <p>No stations found.</p>
-    <?php else: ?>
+#TODO: replace with function and always read from the json (speed) - or db ?
+if (empty($rows)) {
+    echo "<p>No stations found.</p>";
+} else { ?>
         <table>
             <thead>
             <tr>
@@ -29,6 +19,7 @@ $rows = json_decode(file_get_contents($jsonFile), true) ?? [];
             <?php
             $superfluousStrings = [" Bhf"," (Berlin)"," (TF)"];
             foreach ($rows as $row):
+                //print_r($row);
                 ?>
                 <tr>
                     <!-- 1. Route with color -->
@@ -54,17 +45,16 @@ $rows = json_decode(file_get_contents($jsonFile), true) ?? [];
                         <?= htmlspecialchars(str_replace($superfluousStrings, "", $row['trip_headsign'] ?? '')) ?>
                     </td>
 
-                    <!-- 4. Action buttons -->
+                    <!-- 4. Action buttons #TODO: finish implementing ID -->
                     <td>
-                        <a href="../public/index.php?addEditVisit=<?= htmlspecialchars($row['parent_station'] ?? '') ?>"
+                        <a href="../public/index.php?view=addEditVisit?station_id=<?= htmlspecialchars($row['parent_station'] ?? '') ?>"
                            class="btn btn-visit">Visit</a>
-                        <a href="../public/index.php?showStation=<?= htmlspecialchars($row['parent_station'] ?? '') ?>"
+                        <a href="../public/index.php?view=showStation?station_id=<?= htmlspecialchars($row['parent_station'] ?? '') ?>"
                            class="btn btn-view">View</a>
                     </td>
                 </tr>
-            <?php endforeach; ?>
+            <?php endforeach; }?>
             </tbody>
         </table>
-    <?php endif; ?>
 </body>
 </html>

@@ -1,21 +1,26 @@
 <?php
-$stationName = $_GET['stationName']; //TODO: change this to ID when ID implemented from parent station
-
-foreach (Station::$stationsStaticArr as $s) {
-    if ($s->getTripHeadsign() === $stationName) {
-        return $s;
-    }
-    break; //this is needed to actually stop the pointer on the right object
+if (isset($_GET['station_id'])){
+    $station_id = $_GET['station_id'];
+    //$s = Station::getStationById($station_id);
+} else {
+    echo 'Error: no station ID given';
 }
 
+/// get station info from DB (not json for now)
+$stationFromDB = DatabaseMain::getByID($station_id, 'endstations');
+$endstation_name = $stationFromDB['trip_headsign'];
+$endstation_route = $stationFromDB['route_short_name'];
+
 ?>
+
+
 
 <div class=container>
     <table class=station-profile>
         <tr>
             <td><img src="assets/img/stations/defaultstation.png" width="400"/></td> <!--source: Wikimedia Commons-->
-            <td><h2><?= $stationName ?></h2>
-                <p>line: <?= $s->getRouteShortName() ?></p>
+            <td><h2><?= $endstation_name ?></h2>
+                <p>line: <?= $endstation_route ?></p>
                 <p>more info about the station</p>
                 <p>more info about the station</p>
                 <p>more info about the station</p>

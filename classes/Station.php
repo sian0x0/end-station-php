@@ -2,7 +2,7 @@
 class Station
 {
     private string $parentStation;
-    private string $stationId; //derived from parentStation automatically
+    private string $stationId;
     private string $tripHeadsign;
     private string $stationName; //derived from tripHeadsign automatically
     private string $routeShortName;
@@ -60,8 +60,7 @@ class Station
 // transform input data to get station ID and name
     private static function deriveStationId(string $parentStation): string
     {
-        //#TODO
-        return trim($parentStation);
+        return (int) substr(strrchr($parentStation, ':'), 1);
     }
 
     private static function deriveStationName(string $tripHeadsign): string
@@ -181,7 +180,45 @@ class Station
     {
         $this->line = $line;
     }
+
+    public function getStationName(): string
+    {
+        return $this->stationName;
+    }
+
+    public function setStationName(string $stationName): void
+    {
+        $this->stationName = $stationName;
+    } //derived from parentStation automatically
+
 //other getters and CRUD functions
+    public static function getStationById (int $stationId): Station
+    {
+        $s = null;
+        echo $stationId;
+        print_r(self::$stationsStaticArr);
+        foreach (self::$stationsStaticArr as $station) {
+            if ($station->getStationId() === $stationId) {
+                $s = $station;
+                break; //there is only 1 to find, no need to carry on looping
+            }
+        }
+        return $s;
+    }
+
+    public static function getStationByName (string $stationName): Station
+    {
+        $s = null;
+        //echo $stationName;
+        //print_r(self::$stationsStaticArr);
+        foreach (self::$stationsStaticArr as $station) {
+            if ($station->getStationName() === $stationName) {
+                $s = $station;
+                break; //there is only 1 to find, no need to carry on looping
+            }
+        }
+        return $s;
+    }
 
     public static function loadJSON(): ?array
     {
@@ -288,5 +325,15 @@ class Station
 
         $tableHtml .= '</table>';
         return $tableHtml;
+    }
+
+    public static function makeSelectOption (array $objectArray): string
+    {
+        $entity = strtolower(get_class($objectArray[0]));
+        $htmlString = '<select name="' . $entity . 'Id"' . 'id="' . $entity . '">';
+        foreach ($objectArray as $object) { // display the name but submit the ID value
+            $htmlString .= '<option value="' . $object->getStationID() . '">' . $object->getStationName() . '</option>';
+        }
+        return $htmlString . '</select><br>';
     }
 }
