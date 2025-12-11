@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS endstations (route_short_name VARCHAR(50),
                                         endstation_id INT);
 
 CREATE TABLE users (
-                       user_id INT, #TODO: add back auto/key
+                       user_id INT PRIMARY KEY AUTO_INCREMENT,
                        username VARCHAR(20) NOT NULL,
                        password CHAR(60) NOT NULL,
                        join_date DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -169,7 +169,7 @@ CREATE TABLE users (
 );
 
 CREATE TABLE visits (
-                        visit_id INT, #TODO: add back auto/key
+                        visit_id INT PRIMARY KEY AUTO_INCREMENT,
                         user_id INT NOT NULL,
                         endstation_id INT NOT NULL,
                         guest_ids varchar(255),
