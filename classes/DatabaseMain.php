@@ -6,6 +6,16 @@ class DatabaseMain
         //actual CREATE now happens via Dockerfile
     }
 
+    /**
+     * Populates the main database from default data (GTFS DB, JSON, or hard coded)
+     */
+    public static function populateTableDefaults(array $rows = null) : void
+    {
+        self::executeSqlFile(DSN_NO_DB, 'create_endstations_db.sql');
+        if ($rows) {
+            self::populateDefaultEndtationsFromCache($rows);
+        }
+    }
 
     private static function executeSqlFile(string $dsn, string $sql_filename) :void
     {
@@ -28,16 +38,7 @@ class DatabaseMain
             }
         }
     }
-    /**
-     * Populates the main database from default data (GTFS DB and hard coded)
-     */
-    public static function populateTableDefaults(array $rows = null) : void
-    {
-        self::executeSqlFile(DSN_NO_DB, 'create_endstations_db.sql');
-        if ($rows) {
-            self::populateDefaultEndtationsFromCache($rows);
-        }
-    }
+
 
     public static function populateDefaultEndtationsFromCache(array $rows): void {
         $conn = new PDO(DSN_MAIN, DB_USER, DB_PASS);
@@ -88,10 +89,61 @@ class DatabaseMain
                 ':stop_lon'          => $row['stop_lon'] ?? null,
                 ':shape_id'          => $row['shape_id'] ?? null,
                 ':line'              => $row['line'] ?? null,
-                ':endstation_id'     => $row['endstation_id'] ?? null,
+                ':endstation_id'     => (int) substr(strrchr($row['parent_station'], ':'), 1) ?? null,
             ]);
         }
     }
 
+    public static function getByID(int $id, string $tableName) : ?array {
+        $id_string = rtrim($tableName, 's') . '_id';
 
+        $conn = new PDO(DSN_MAIN, DB_USER, DB_PASS);
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $sql = "SELECT * from $tableName where $id_string = :id";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public static function getAll(string $tableName) : array {
+        //echo "getting $tableName\n";
+        if (in_array($tableName, ['endstations', 'visits'])) {
+            $conn = new PDO(DSN_MAIN, DB_USER, DB_PASS);
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $sql = "SELECT * from $tableName";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } if ($tableName == 'users') {
+            $conn = new PDO(DSN_MAIN, DB_USER, DB_PASS);
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $sql = "SELECT user_id, username, join_date, profile_picture, role from $tableName";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } else {
+            return [];
+        }
+
+
+    }
+
+    public static function isDatabaseEmpty(): bool {
+        $conn = new PDO(DSN_MAIN, DB_USER, DB_PASS);
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $tables = $conn->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN); //TODO:make method getTables
+        // if a table has at least 1 row, the db is not empty
+        foreach ($tables as $table) {
+            $count = $conn->query("SELECT COUNT(*) FROM $table")->fetchColumn();
+            if ($count > 0) {
+                return false;
+            }
+        }
+        return true; // if no data in any table, db is empty
+    }
 }
+

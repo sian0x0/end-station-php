@@ -35,7 +35,9 @@ $user_id = 2; //for testing login features without login #TEST
     //DatabaseGTFS::createDB();
 
     // 2. populateDB main database from GTFS database
-    DatabaseMain::populateTableDefaults(Station::loadJSON());
+    if (DatabaseMain::isDatabaseEmpty()) {
+        DatabaseMain::populateTableDefaults(Station::loadJSON());
+    }
 
     //2a. load straight from JSON into DB if GTFS db not working (as currently) #TODO
     $rows = Station::loadData();
@@ -53,7 +55,6 @@ $user_id = 2; //for testing login features without login #TEST
 
     ?>
 </div>
-
 
 <?php
 // retrieve arrays of objects for each object type, using dummy object to call non-static methods
