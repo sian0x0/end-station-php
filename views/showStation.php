@@ -1,5 +1,4 @@
 <?php
-include '/nav.php';
 $stationName = $_GET['stationName']; //TODO: change this to ID when ID implemented from parent station
 
 foreach (Station::$stationsStaticArr as $s) {
