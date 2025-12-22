@@ -10,10 +10,9 @@ if (isset($_GET['station_id'])){
 $stationFromDB = DatabaseMain::getByID($station_id, 'endstations');
 $endstation_name = $stationFromDB['trip_headsign'];
 $endstation_route = $stationFromDB['route_short_name'];
+$endstation_visits = Visit::getVisitsByStationId($station_id);
 
 ?>
-
-
 
 <div class=container>
     <table class=station-profile>
@@ -39,42 +38,9 @@ $endstation_route = $stationFromDB['route_short_name'];
                 <th>Visitors</th>
                 <th></th>
             </tr>
-            <tr>
-                <td>01.10.25</td>
-                <td><b>Lou</b>, Sian, Vullnet</td>
-                <td>
-                    <button>view</button>
-                </td>
-            <tr>
-                <td>01.07.25</td>
-                <td><b>Sian</b>, Vullnet</td>
-                <td>
-                    <button>view</button>
-                </td>
-            <tr>
-                <td>01.05.25</td>
-                <td><b>Lou</b>, Sian, Vullnet</td>
-                <td>
-                    <button>view</button>
-                </td>
-            <tr>
-                <td>01.03.25</td>
-                <td><b>Lou</b>,</td>
-                <td>
-                    <button>view</button>
-                </td>
-            <tr>
-                <td>01.02.25</td>
-                <td><b>Vullnet</b></td>
-                <td>
-                    <button>view</button>
-                </td>
-            <tr>
-                <td>01.01.25</td>
-                <td><b>Lou</b>, Sian, Vullnet</td>
-                <td>
-                    <button>view</button>
-                </td>
+            <?php
+            for
+            ?>
                 <?php
                 //TODO..
                 //            foreach ($s->getVisits() as $v) {

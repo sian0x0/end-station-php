@@ -48,10 +48,7 @@ $user_id = 2; //for testing login features without login #TEST
     //$users = DatabaseMain::getUsers();
     //$endstations = DatabaseMain::getStations();
 
-
     //echo "<br>INFO: Query completed with " . count($rows) . " rows";
-
-
 
     ?>
 </div>
