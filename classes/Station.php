@@ -195,10 +195,11 @@ class Station
     public static function getStationById (int $stationId): Station
     {
         $s = null;
-        echo $stationId;
-        print_r(self::$stationsStaticArr);
+        //echo $stationId . "<br>" . "<br>";
+        //print_r(self::$stationsStaticArr);
         foreach (self::$stationsStaticArr as $station) {
-            if ($station->getStationId() === $stationId) {
+            //echo $station->getStationId() . "<br>";
+            if ($station->getStationId() == $stationId) {
                 $s = $station;
                 break; //there is only 1 to find, no need to carry on looping
             }
