@@ -9,7 +9,6 @@ class Visit
     private string $visit_date;
     private int $user_id;
     private array $guest_ids;
-    static array $visitsStaticArr = [];
 
     public function __construct($station_id, $visit_date = null, $visit_id = null, $user_id = null, $guest_ids = [])
     {
@@ -18,7 +17,6 @@ class Visit
         $this->visit_date = $visit_date ?? date('Y-m-d H:i:s'); //default: now
         $this->user_id = $user_id;
         $this->guest_ids = $guest_ids ?? [];
-        self::$visitsStaticArr[] = $this;
     }
 
 
@@ -54,9 +52,12 @@ class Visit
         return $this;
     }
 
-    private static function getVisitsStaticArr() :array
+    public static function getAll(): array
     {
-        return self::$visitsStaticArr;
+        $db = DatabaseMain::getConnection();
+        $sql = "SELECT * FROM visits";
+        $stmt = $db->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
     }
 
     public static function getVisitsByStationId(mixed $station_id) :array
@@ -115,9 +116,8 @@ class Visit
 //other getters
     public static function getVisitById(int $visit_id): ?Visit
     {
-        $visits = self::getVisitsStaticArr();
-        print_r(self::$visitsStaticArr);
-        foreach ($visits as $visit) { //todo: decide if reading from db or object array!
+        $visits = self::getAll();
+        foreach ($visits as $visit) {
             if ($visit->getVisitId() == $visit_id) {
                 print_r($visit);
                 return $visit;

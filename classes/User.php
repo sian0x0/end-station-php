@@ -2,32 +2,29 @@
 
 class User
 {
-    private int $id;
-    private string $userName;
+    private ?int $user_id = null; //null(able) initially, to be handled by the db
+    private string $username;
     private string $role;
-    private string $profilePicture;
+    private string $profile_picture;
     private string $password;
-    private string $joinedDate;
-    private static int $counter = 1;
-    static array $usersStaticArr = [];
+    private string $join_date;
+    //private static int $counter = 1;
 
-    /**
-     * @param int $id
-     * @param string $userName
-     * @param string $role
-     * @param string $profilePicture
-     * @param string $password
-     * @param string $joinedDate
-     */
-    public function __construct(string $userName, string $role, string $profilePicture, string $password, string $joinedDate, $id = null)
-    {
-        $this->id = $id ?? self::$counter++;
-        $this->userName = $userName;
+
+    public function __construct(
+        string $username = "", //empty/null values needed for PDO::FETCH_CLASS
+        string $role = "",
+        string $profile_picture = "",
+        string $password = "",
+        string $join_date = "",
+        ?int $user_id = null
+    ) {
+        $this->user_id = $user_id;
+        $this->username = $username;
         $this->role = $role;
-        $this->profilePicture = $profilePicture;
+        $this->profile_picture = $profile_picture;
         $this->password = $password;
-        $this->joinedDate = $joinedDate;
-        self::$usersStaticArr[] = $this;
+        $this->join_date = $join_date;
     }
 
     public static function generateSampleUsers(): array
@@ -61,24 +58,24 @@ class User
     }
 
 // getters and setters
-    public function getId(): int
+    public function getUserId(): int
     {
-        return $this->id;
+        return $this->user_id;
     }
 
-    public function setId(int $id): void
+    public function setUserId(int $user_id): void
     {
-        $this->id = $id;
+        $this->user_id = $user_id;
     }
 
-    public function getUserName(): string
+    public function getUsername(): string
     {
-        return $this->userName;
+        return $this->username;
     }
 
-    public function setUserName(string $userName): void
+    public function setUsername(string $username): void
     {
-        $this->userName = $userName;
+        $this->username = $username;
     }
 
     private static function readUsersJSON(): void
@@ -86,8 +83,6 @@ class User
         if (file_exists('data/cache/users.json'))
         {
             $usersAssocArray = json_decode(file_get_contents('data/cache/users.json'), true);
-            //clear central list of objects first
-            self::$usersStaticArr = [];
             foreach ($usersAssocArray as $user) {
                 $u = new User(
                     $user['id'],
@@ -112,6 +107,13 @@ class User
         return $htmlString . '</select><br>';
     }
 
+    public static function getAll(): array
+    {
+        $db = DatabaseMain::getConnection();
+        $sql = "SELECT user_id, username, join_date, profile_picture, role FROM users";
+        $stmt = $db->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
+    }
 
     public function getRole(): string
     {
@@ -125,12 +127,12 @@ class User
 
     public function getProfilePicture(): string
     {
-        return $this->profilePicture;
+        return $this->profile_picture;
     }
 
-    public function setProfilePicture(string $profilePicture): void
+    public function setProfilePicture(string $profile_picture): void
     {
-        $this->profilePicture = $profilePicture;
+        $this->profile_picture = $profile_picture;
     }
 
     public function getPassword(): string
@@ -143,14 +145,14 @@ class User
         $this->password = $password;
     }
 
-    public function getJoinedDate(): string
+    public function getJoindate(): string
     {
-        return $this->joinedDate;
+        return $this->join_date;
     }
 
-    public function setJoinedDate(string $joinedDate): void
+    public function setJoindate(string $join_date): void
     {
-        $this->joinedDate = $joinedDate;
+        $this->join_date = $join_date;
     }
 
     public static function getCounter(): int
@@ -163,25 +165,17 @@ class User
         self::$counter = $counter;
     }
 
-    public static function getUsersStaticArr(): array
-    {
-        return self::$usersStaticArr;
-    }
-
-    public static function setUsersStaticArr(array $usersStaticArr): void
-    {
-        self::$usersStaticArr = $usersStaticArr;
-    }
 
 // other getters with arguments
-    public static function getUserNameById($id): ?string
+    public static function getUserNameById($user_id): ?string
     {
-        foreach (User::$usersStaticArr as $user) {
-            if ($id == $user->getId()) {
-                return $user->getUsername();
-            }
-        }
-        return null;
+        $conn = DatabaseMain::getConnection();
+        $sql = "SELECT * FROM users WHERE user_id = :user_id";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':user_id', $user_id);
+        $stmt->execute();
+        $result = $stmt->fetch();
+        return $result['username'];
     }
 
     public static function loadData(): void

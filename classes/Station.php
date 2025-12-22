@@ -13,7 +13,6 @@ class Station
     private string $stopLon;
     private string $shapeId;
     private array $line;
-    static array $stationsStaticArr;
     private static string $cacheFile = __DIR__ . '/../data/cache/rows.json';
 
     public static array $superfluousStrings = [" Bhf"," (Berlin)"," (TF)"];
@@ -55,7 +54,6 @@ class Station
         $this->stopLon = $stopLon;
         $this->shapeId = $shapeId;
         $this->line = $line;
-        self::$stationsStaticArr[] = $this;
     }
 // transform input data to get station ID and name
     private static function deriveStationId(string $parentStation): string
@@ -81,9 +79,12 @@ class Station
         $this->stationId = $stationId;
     }
 
-    private static function getAll()
+    public static function getAll(): array
     {
-        return self::$stationsStaticArr;
+        $db = DatabaseMain::getConnection();
+        $sql = "SELECT * FROM endstations";
+        $stmt = $db->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_CLASS, self::class); //return an object of this class
     }
 
     public function getRouteShortName(): string
@@ -200,8 +201,6 @@ class Station
     public static function getStationById (int $stationId): Station
     {
         $s = null;
-        //echo $stationId . "<br>" . "<br>";
-        //print_r(self::$stationsStaticArr);
         foreach (self::getAll() as $station) {
             //echo $station->getStationId() . "<br>";
             if ($station->getStationId() == $stationId) {
@@ -215,9 +214,7 @@ class Station
     public static function getStationByName (string $stationName): Station
     {
         $s = null;
-        //echo $stationName;
-        //print_r(self::$stationsStaticArr);
-        foreach (self::bojhb as $station) {
+        foreach (self::getAll() as $station) {
             if ($station->getStationName() === $stationName) {
                 $s = $station;
                 break; //there is only 1 to find, no need to carry on looping
@@ -256,7 +253,6 @@ class Station
             return null;
         }
     }
-
 
     public static function loadData() : ?array
     {
@@ -335,12 +331,11 @@ class Station
         return $tableHtml;
     }
 
-    public static function makeSelectOption (array $objectArray): string
+    public static function makeSelectOption (): string
     {
-        $entity = strtolower(get_class($objectArray[0]));
-        $htmlString = '<select name="' . $entity . 'Id"' . 'id="' . $entity . '">';
-        foreach ($objectArray as $object) { // display the name but submit the ID value
-            $htmlString .= '<option value="' . $object->getStationID() . '">' . $object->getStationName() . '</option>';
+        $htmlString = '<select name="StationId" id="Station">';
+        foreach (self::getAll() as $station) { // display the name but submit the ID value
+            $htmlString .= '<option value="' . $station->getStationID() . '">' . $station->getStationName() . '</option>';
         }
         return $htmlString . '</select><br>';
     }

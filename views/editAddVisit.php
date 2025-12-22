@@ -18,10 +18,10 @@ $visit_id = $_GET['visit_id']??null;
     <input type="hidden" name="visit_id" value="<?=$visit_id?>">
     <input type='datetime-local' id='datetimeInput' value="<?=$visit_datetime?> ">
     <label for="endstation">Endstation:</label>
-    <?php $endstations = Station::$stationsStaticArr; ?>
+    <?php $endstations = Station::getAll(); ?>
     <?php echo Station::makeSelectOption($endstations); ?>
     <label for="endstation">Guests:</label>
-    <?php $users = User::$usersStaticArr; ?>
+    <?php $users = User::getAll(); ?>
     <?php echo User::makeSelectOption($users); ?>
 
     <input type="submit" value="Submit">

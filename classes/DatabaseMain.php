@@ -127,12 +127,12 @@ class DatabaseMain
             $sql = "SELECT * from $tableName";
             $stmt = $conn->prepare($sql);
             $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $stmt->fetchAll(PDO::FETCH_CLASS);
         } if ($tableName == 'users') {
             $sql = "SELECT user_id, username, join_date, profile_picture, role from $tableName";
             $stmt = $conn->prepare($sql);
             $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $stmt->fetchAll(PDO::FETCH_CLASS);
         } else {
             return [];
         }
