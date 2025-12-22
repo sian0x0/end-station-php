@@ -4,13 +4,16 @@ spl_autoload_register(function ($class) {
     include '../classes/' . $class . '.php';
 });
 
-$visit_id = $_GET['user_id'];
+$visit_id = $_GET['visit_id'];
 
 
-foreach (DatabaseMain::getAll('users') as $user) {
-    if ($user['user_id'] == $user_id) {
-        echo "<h2>User: " . $user['username'] . "</h2>";
-        echo "Joined on " . date('j M Y', strtotime($user['join_date'])) . "<br>";
-        echo "<img src='/assets/img/profile/" . $user['profile_picture'] . "'><br>";
+foreach (DatabaseMain::getAll('visits') as $visit) {
+    if ($visit['visit_id'] == $visit_id) {
+        //print_r($visit);
+        $endstation_name = Station::getStationById($visit['endstation_id'])->getStationName();
+        echo "<h2>Visit to " . $endstation_name . " on " . date('j M Y', strtotime($visit['visit_datetime'])) . "</h2>";
+        echo "<p>User ID: " . $visit['user_id'] . "</p>";
+        echo "<p>Guests: " . ($visit['guest_ids']?? 'none') . "</p>";
+        echo "<p>Date and time: " . $visit['visit_datetime'] . "</p>";
     }
 }

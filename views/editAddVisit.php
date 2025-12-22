@@ -18,6 +18,10 @@
     <label for="endstation">Endstation:</label>
     <?php $endstations = Station::$stationsStaticArr; ?>
     <?php echo Station::makeSelectOption($endstations); ?>
+    <label for="endstation">Guests:</label>
+    <?php $users = User::$usersStaticArr; ?>
+    <?php echo User::makeSelectOption($users); ?>
+
 
     <input type="submit" value="Submit">
 </form>

@@ -53,7 +53,6 @@ class DatabaseMain
     }
 
     public static function populateDefaultEndtationsFromCache(array $rows): void {
-        $conn = self::getConnection();
         $sql = "
         INSERT INTO endstation_db.endstations (
             route_short_name,
@@ -84,7 +83,7 @@ class DatabaseMain
             :endstation_id
         )
     ";
-
+        $conn = self::getConnection();
         $stmt = $conn->prepare($sql);
 
         foreach ($rows as $row) {

@@ -21,7 +21,7 @@ echo "<h2>User: " . $user['username'] . "</h2>";
 echo "Joined on " . date('j M Y', strtotime($user['join_date'])) . "<br>";
 echo "<img src='/assets/img/profile/" . $user['profile_picture'] . "' width='200'><br>";
 
-echo "<a href='index.php?view=editUser&user_id=$user[user_id]'><button>Edit</button></a>";
+//echo "<a href='index.php?view=editUser&user_id=$user[user_id]'><button>Edit</button></a>"; //later: let users edit own profile
 echo "</div>";
 
 
@@ -35,6 +35,7 @@ echo "<th>Date</th><th>Station</th><th>Route</th><th>Guests</th>";
 echo "</tr>";
 
 foreach ($visitsByUser as $visit) {
+    $visit_id = $visit['visit_id'];
     $visit_date = date('j M Y', strtotime($visit['visit_datetime']));
     $station_id = $visit['endstation_id'];
     $station_visited = DatabaseMain::getByID($station_id, 'endstations');

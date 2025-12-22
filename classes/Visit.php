@@ -54,6 +54,11 @@ class Visit
         return $this;
     }
 
+    private static function getVisitsStaticArr() :array
+    {
+        return self::$visitsStaticArr;
+    }
+
     public function getStationId(): string
     {
         return $this->station_id;
@@ -98,5 +103,17 @@ class Visit
         return $this;
     }
 
-
+//other getters
+    public static function getVisitById(int $visit_id): ?Visit
+    {
+        $visits = self::getVisitsStaticArr();
+        print_r(self::$visitsStaticArr);
+        foreach ($visits as $visit) { //todo: decide if reading from db or object array!
+            if ($visit->getVisitId() == $visit_id) {
+                print_r($visit);
+                return $visit;
+            }
+        }
+        return null;
+    }
 }
