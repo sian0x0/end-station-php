@@ -81,7 +81,7 @@ class User
         $this->userName = $userName;
     }
 
-    private static function readUsersJSON()
+    private static function readUsersJSON(): void
     {
         if (file_exists('data/cache/users.json'))
         {
@@ -101,6 +101,17 @@ class User
             }
         }
     }
+
+    public static function makeSelectOption(array $objectArray)
+    {
+        $entity = strtolower(get_class($objectArray[0]));
+        $htmlString = '<select name="' . $entity . 'Id"' . 'id="' . $entity . '" multiple>';
+        foreach ($objectArray as $object) { // display the name but submit the ID value
+            $htmlString .= '<option value="' . $object->getId() . '">' . $object->getUserName() . '</option>';
+        }
+        return $htmlString . '</select><br>';
+    }
+
 
     public function getRole(): string
     {

@@ -6,7 +6,6 @@ spl_autoload_register(function ($class) {
 
 $visit_id = $_GET['visit_id'];
 
-
 foreach (DatabaseMain::getAll('visits') as $visit) {
     if ($visit['visit_id'] == $visit_id) {
         //print_r($visit);

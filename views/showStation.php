@@ -35,11 +35,23 @@ $endstation_visits = Visit::getVisitsByStationId($station_id);
         <table class=visits-list>
             <tr>
                 <th>Date</th>
-                <th>Visitors</th>
+                <th>Time</th>
+                <th>User</th>
+                <th>Guests</th>
                 <th></th>
             </tr>
             <?php
-            for
+            foreach ($endstation_visits as $endstation_visit) {
+                $visit_id = $endstation_visit['visit_id'];
+                echo "<tr>";
+                echo "<td>" . date('j M Y', strtotime($endstation_visit['visit_datetime'])) . "</td>";
+                echo "<td>" . date('H:i', strtotime($endstation_visit['visit_datetime'])) . "</td>";
+                echo "<td>" . User::getUserNameById($endstation_visit['user_id']) . "</td>";
+                echo "<td>" . $endstation_visit['guest_ids'] . "</td>";
+                echo "<td><a href='index.php?view=showVisit&visit_id=$visit_id'><button>View</button></a></td>";
+
+                echo "</tr>";
+            }
             ?>
                 <?php
                 //TODO..

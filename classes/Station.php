@@ -81,6 +81,11 @@ class Station
         $this->stationId = $stationId;
     }
 
+    private static function getAll()
+    {
+        return self::$stationsStaticArr;
+    }
+
     public function getRouteShortName(): string
     {
         return $this->routeShortName;
@@ -197,7 +202,7 @@ class Station
         $s = null;
         //echo $stationId . "<br>" . "<br>";
         //print_r(self::$stationsStaticArr);
-        foreach (self::$stationsStaticArr as $station) {
+        foreach (self::getAll() as $station) {
             //echo $station->getStationId() . "<br>";
             if ($station->getStationId() == $stationId) {
                 $s = $station;
@@ -212,7 +217,7 @@ class Station
         $s = null;
         //echo $stationName;
         //print_r(self::$stationsStaticArr);
-        foreach (self::$stationsStaticArr as $station) {
+        foreach (self::bojhb as $station) {
             if ($station->getStationName() === $stationName) {
                 $s = $station;
                 break; //there is only 1 to find, no need to carry on looping
@@ -256,7 +261,8 @@ class Station
     public static function loadData() : ?array
     {
         //TODO: read from DB also
-        $rows = self::loadJSON();
+        //$rows = self::loadJSON();
+        $rows = DatabaseMain::getAll('endstations');
         return $rows;
     }
 
@@ -294,9 +300,10 @@ class Station
 
                 // 3. Station name (cleaned Headsign) formatted depending on transit type
                 $stationName = str_replace(self::$superfluousStrings, "", $row['trip_headsign']);
+                $endstation_id = $row['endstation_id'];
                 $tableHtml .= "</td>"
                     . "<td class='destination-cell' style='color:" . ($row['route_type'] == 400 ? '#f5f5f5' : 'yellow') . ";'>"
-                    . "<a href ='index.php?view=showStation&stationName=$stationName'> "
+                    . "<a href ='index.php?view=showStation&station_id=$endstation_id'> "
                     . htmlspecialchars($stationName)
                     . "</a></td>";
 

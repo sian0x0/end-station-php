@@ -59,6 +59,15 @@ class Visit
         return self::$visitsStaticArr;
     }
 
+    public static function getVisitsByStationId(mixed $station_id) :array
+    {
+        $conn = DatabaseMain::getConnection();
+        $stmt = $conn->prepare("SELECT * FROM visits WHERE endstation_id = :station_id");
+        $stmt->bindValue(':station_id', $station_id);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function getStationId(): string
     {
         return $this->station_id;
