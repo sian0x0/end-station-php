@@ -1,6 +1,19 @@
 <?php
 class DatabaseMain
 {
+    private static object $dbh; // database handle to re-use
+    public static function getConnection(): object
+    {
+        if (!isset(self::$dbh)) {
+            try {
+                self::$dbh = new PDO(DSN_MAIN, DB_USER, DB_PASS);
+                self::$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            } catch (PDOException $e) {
+                echo 'Connection failed: ' . $e->getMessage();
+            }
+        }
+        return self::$dbh;
+    }
 
     public static function createDB() {
         //actual CREATE now happens via Dockerfile
@@ -39,10 +52,8 @@ class DatabaseMain
         }
     }
 
-
     public static function populateDefaultEndtationsFromCache(array $rows): void {
-        $conn = new PDO(DSN_MAIN, DB_USER, DB_PASS);
-        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $conn = self::getConnection();
         $sql = "
         INSERT INTO endstation_db.endstations (
             route_short_name,
@@ -97,8 +108,7 @@ class DatabaseMain
     public static function getByID(int $id, string $tableName) : ?array {
         $id_string = rtrim($tableName, 's') . '_id';
 
-        $conn = new PDO(DSN_MAIN, DB_USER, DB_PASS);
-        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $conn = self::getConnection();
 
         $sql = "SELECT * from $tableName where $id_string = :id";
         $stmt = $conn->prepare($sql);
@@ -110,16 +120,13 @@ class DatabaseMain
 
     public static function getAll(string $tableName) : array {
         //echo "getting $tableName\n";
+        $conn = self::getConnection();
         if (in_array($tableName, ['endstations', 'visits'])) {
-            $conn = new PDO(DSN_MAIN, DB_USER, DB_PASS);
-            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $sql = "SELECT * from $tableName";
             $stmt = $conn->prepare($sql);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } if ($tableName == 'users') {
-            $conn = new PDO(DSN_MAIN, DB_USER, DB_PASS);
-            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $sql = "SELECT user_id, username, join_date, profile_picture, role from $tableName";
             $stmt = $conn->prepare($sql);
             $stmt->execute();
@@ -128,12 +135,10 @@ class DatabaseMain
             return [];
         }
 
-
     }
 
     public static function isDatabaseEmpty(): bool {
-        $conn = new PDO(DSN_MAIN, DB_USER, DB_PASS);
-        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $conn = self::getConnection();
 
         $tables = $conn->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN); //TODO:make method getTables
         // if a table has at least 1 row, the db is not empty
@@ -145,5 +150,6 @@ class DatabaseMain
         }
         return true; // if no data in any table, db is empty
     }
+
 }
 
