@@ -157,7 +157,8 @@ CREATE TABLE IF NOT EXISTS endstations (route_short_name VARCHAR(50),
                                         stop_lon DECIMAL(8,6),
                                         shape_id VARCHAR(50),
                                         line mediumtext,
-                                        endstation_id INT);
+                                        endstation_id INT,
+                                        endstation_name VARCHAR(50));
 
 CREATE TABLE users (
                        user_id INT PRIMARY KEY AUTO_INCREMENT,

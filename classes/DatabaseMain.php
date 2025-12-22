@@ -66,7 +66,8 @@ class DatabaseMain
             stop_lon,
             shape_id,
             line,
-            endstation_id
+            endstation_id,
+            endstation_name
         )
         VALUES (
             :route_short_name,
@@ -80,7 +81,8 @@ class DatabaseMain
             :stop_lon,
             :shape_id,
             :line,
-            :endstation_id
+            :endstation_id,
+            :endstation_name
         )
     ";
         $conn = self::getConnection();
@@ -99,6 +101,7 @@ class DatabaseMain
                 ':stop_lon'          => $row['stop_lon'] ?? null,
                 ':shape_id'          => $row['shape_id'] ?? null,
                 ':line'              => $row['line'] ?? null,
+                ':endstation_name'   => Station::deriveStationName($row['trip_headsign']) ?? null,
                 ':endstation_id'     => (int) substr(strrchr($row['parent_station'], ':'), 1) ?? null,
             ]);
         }

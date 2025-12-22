@@ -63,7 +63,7 @@ class Station
         return (int) substr(strrchr($parentStation, ':'), 1);
     }
 
-    private static function deriveStationName(string $tripHeadsign): string
+    public static function deriveStationName(string $tripHeadsign): string
     {
         return str_replace(self::$superfluousStrings, "", $tripHeadsign);
     }
