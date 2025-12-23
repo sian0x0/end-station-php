@@ -10,7 +10,7 @@ if ($view === 'editVisit' && $visit_id) {
     // use $station_id from get if available (e.g., from station profile)
     $visit = new Visit(
         endstation_id: (int)($station_id ?? 0),
-        user_id: $user_id,
+        user_id: $logged_in_user_id,
         visit_datetime: date('Y-m-d H:i:s')
     );
     $form_title = "log new visit";
@@ -55,7 +55,7 @@ $html_datetime = date('Y-m-d\TH:i', strtotime($visit->getVisitDatetime()));
                 users: User::getAll(),
                 name: "guest_ids[]",
                 selectedIds: $visit->getGuestIds(),
-                excludeId: (int)$user_id
+                excludeId: (int)$logged_in_user_id
             ) ?>
             <small>hold ctrl/cmd to select multiple</small>
         </div>
