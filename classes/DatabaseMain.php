@@ -120,25 +120,6 @@ class DatabaseMain
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public static function getAll(string $tableName) : array {
-        //echo "getting $tableName\n";
-        $conn = self::getConnection();
-        if (in_array($tableName, ['endstations', 'visits'])) {
-            $sql = "SELECT * from $tableName";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_CLASS);
-        } if ($tableName == 'users') {
-            $sql = "SELECT user_id, username, join_date, profile_picture, role from $tableName";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_CLASS);
-        } else {
-            return [];
-        }
-
-    }
-
     public static function isDatabaseEmpty(): bool {
         $conn = self::getConnection();
 
