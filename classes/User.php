@@ -3,62 +3,61 @@
 class User
 {
     private ?int $user_id = null; //null(able) initially, to be handled by the db
-    private string $username;
-    private string $role;
-    private string $profile_picture;
-    private string $password;
-    private string $join_date;
-    //private static int $counter = 1;
+    private ?string $username = null;
+    private ?string $role = null;
+    private ?string $profile_picture = null;
+    private ?string $password = null;
+    private ?string $join_date = null;
 
-
-    public function __construct(
-        string $username = "", //empty/null values needed for PDO::FETCH_CLASS
-        string $role = "",
-        string $profile_picture = "",
-        string $password = "",
-        string $join_date = "",
+    public function __construct( //empty/null default values needed so that PDO::FETCH_CLASS can call the constructor with no args
+        ?string $username = null,
+        ?string $role = null,
+        ?string $profile_picture = null,
+        ?string $password = null,
+        ?string $join_date = null,
         ?int $user_id = null
     ) {
-        $this->user_id = $user_id;
-        $this->username = $username;
-        $this->role = $role;
-        $this->profile_picture = $profile_picture;
-        $this->password = $password;
-        $this->join_date = $join_date;
+        // The ??= operator ensures PDO data isn't overwritten by the constructor's default null arguments
+        $this->user_id ??= $user_id;
+        $this->username ??= $username;
+        $this->role ??= $role;
+        $this->profile_picture ??= $profile_picture;
+        $this->password ??= $password;
+        $this->join_date ??= $join_date;
     }
 
-    public static function generateSampleUsers(): array
-    {
-        return [
-            new User(
-                userName: 'admin',
-                role: 1,
-                profilePicture: '/public/img/assets/0.jpg',
-                password: 'hashed_password_123',
-                joinedDate: '2023-05-15',
-                id: 1
-            ),
-            new User(
-                userName: 'lou',
-                role: 2,
-                profilePicture: 'public/assets/img/profile/1.jpg',
-                password: 'hashed_password_456',
-                joinedDate: '2023-07-22',
-                id: 2
-            ),
-            new User(
-                userName: 'vullnet',
-                role: 2,
-                profilePicture: '/public/img/assets/2.jpg',
-                password: 'hashed_password_789',
-                joinedDate: '2023-09-10',
-                id: 3
-            )
-        ];
-    }
+//    public static function generateSampleUsers(): array
+//    {
+//        return [
+//            new User(
+//                username: 'admin',
+//                role: '1',
+//                profile_picture: '/public/img/assets/0.jpg',
+//                password: 'hashed_password_123',
+//                join_date: '2023-05-15',
+//                user_id: 1
+//            ),
+//            new User(
+//                username: 'lou',
+//                role: '2',
+//                profile_picture: 'public/assets/img/profile/1.jpg',
+//                password: 'hashed_password_456',
+//                join_date: '2023-07-22',
+//                user_id: 2
+//            ),
+//            new User(
+//                username: 'vullnet',
+//                role: '2',
+//                profile_picture: '/public/img/assets/2.jpg',
+//                password: 'hashed_password_789',
+//                join_date: '2023-09-10',
+//                user_id: 3
+//            )
+//        ];
+//    }
 
 // getters and setters
-    public function getUserId(): int
+    public function getUserId(): ?int
     {
         return $this->user_id;
     }
@@ -70,7 +69,7 @@ class User
 
     public function getUsername(): string
     {
-        return $this->username;
+        return $this->username ?? "";
     }
 
     public function setUsername(string $username): void
@@ -78,33 +77,34 @@ class User
         $this->username = $username;
     }
 
-    private static function readUsersJSON(): void
-    {
-        if (file_exists('data/cache/users.json'))
-        {
-            $usersAssocArray = json_decode(file_get_contents('data/cache/users.json'), true);
-            foreach ($usersAssocArray as $user) {
-                $u = new User(
-                    $user['id'],
-                    $user['name'],
-                    $user['role'],
-                    $user['profilePicture'],
-                    $user['password'],
-                    $user['joinedDate'],
-                );
-                //$u->setUserVisits(); // #TODO: decide whether to implement here or just via DB
-            }
-        }
-    }
+    /**
+     * Updated to use proper property names: user_id and username
+     */
+    public static function makeSelectOption(
+        array $users,
+        string $name = "guest_ids[]",
+        array $selectedIds = [],
+        ?int $excludeId = null
+    ): string {
+        if (empty($users)) return "";
 
-    public static function makeSelectOption(array $objectArray)
-    {
-        $entity = strtolower(get_class($objectArray[0]));
-        $htmlString = '<select name="' . $entity . 'Id"' . 'id="' . $entity . '" multiple>';
-        foreach ($objectArray as $object) { // display the name but submit the ID value
-            $htmlString .= '<option value="' . $object->getId() . '">' . $object->getUserName() . '</option>';
+        $htmlString = '<select name="' . htmlspecialchars($name) . '" id="' . htmlspecialchars($name) . '" multiple style="height: 100px;">';
+
+        foreach ($users as $user) {
+            $id = $user->getUserId();
+
+            // skip the logged in user if an id is provided
+            if ($excludeId !== null && $id === $excludeId) continue;
+
+            $selected = in_array($id, $selectedIds) ? " selected" : "";
+
+            $htmlString .= '<option value="' . $id . '"' . $selected . '>';
+            $htmlString .= htmlspecialchars($user->getUsername());
+            $htmlString .= '</option>';
         }
-        return $htmlString . '</select><br>';
+
+        $htmlString .= '</select>';
+        return $htmlString;
     }
 
     public static function getAll(): array
@@ -117,7 +117,7 @@ class User
 
     public function getRole(): string
     {
-        return $this->role;
+        return $this->role ?? "";
     }
 
     public function setRole(string $role): void
@@ -127,7 +127,7 @@ class User
 
     public function getProfilePicture(): string
     {
-        return $this->profile_picture;
+        return $this->profile_picture ?? "";
     }
 
     public function setProfilePicture(string $profile_picture): void
@@ -137,7 +137,7 @@ class User
 
     public function getPassword(): string
     {
-        return $this->password;
+        return $this->password ?? "";
     }
 
     public function setPassword(string $password): void
@@ -147,7 +147,7 @@ class User
 
     public function getJoindate(): string
     {
-        return $this->join_date;
+        return $this->join_date ?? "";
     }
 
     public function setJoindate(string $join_date): void
@@ -155,33 +155,48 @@ class User
         $this->join_date = $join_date;
     }
 
-    public static function getCounter(): int
-    {
-        return self::$counter;
-    }
-
-    public static function setCounter(int $counter): void
-    {
-        self::$counter = $counter;
-    }
-
-
 // other getters with arguments
-    public static function getUserNameById($user_id): ?string
+    public static function getUserById(int $user_id): ?self
     {
         $conn = DatabaseMain::getConnection();
         $sql = "SELECT * FROM users WHERE user_id = :user_id";
         $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':user_id', $user_id);
-        $stmt->execute();
-        $result = $stmt->fetch();
-        return $result['username'];
+        $stmt->execute([':user_id' => $user_id]);
+        return $stmt->fetchObject(self::class) ?: null;
     }
 
-    public static function loadData(): void
+//html generators
+    public static function generateTableHtml(): string
     {
-        self::generateSampleUsers();
-        self::readUsersJSON(); // #TODO: replace with PDO
-    }
+        $users = self::getAll();
+        $html = "<table class='users-table'>";
+        $html .= "<thead><tr><th>id</th><th>username</th><th>joined date</th><th>role</th><th>last visit</th></tr></thead>";
+        $html .= "<tbody>";
 
+        foreach ($users as $user) {
+            $user_id = $user->getUserId();
+
+            // resolve last visit details
+            $lastVisit = Visit::getLastVisitByUserId($user_id);
+            $lastVisitDisplay = "none";
+
+            if ($lastVisit) {
+                $station = Station::getStationById($lastVisit->getStationId());
+                $stationName = $station ? $station->getStationName() : "unknown";
+                $date = date('j M Y', strtotime($lastVisit->getVisitDatetime()));
+                $lastVisitDisplay = htmlspecialchars($stationName) . " on " . $date;
+            }
+
+            $html .= "<tr>";
+            $html .= "<td>" . $user_id . "</td>";
+            $html .= "<td><strong><a href='index.php?view=showUser&user_id=$user_id'>" . htmlspecialchars($user->getUsername()) . "</a></strong></td>";
+            $html .= "<td>" . date('j M Y', strtotime($user->getJoindate())) . "</td>";
+            $html .= "<td>" . htmlspecialchars($user->getRole()) . "</td>";
+            $html .= "<td>" . $lastVisitDisplay . "</td>";
+            $html .= "</tr>";
+        }
+
+        $html .= "</tbody></table>";
+        return $html;
+    }
 }

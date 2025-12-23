@@ -1,82 +1,105 @@
 <?php
+
 class Station
 {
-    private string $parentStation;
-    private string $stationId;
-    private string $tripHeadsign;
-    private string $stationName; //derived from tripHeadsign automatically
-    private string $routeShortName;
-    private int $routeType;
-    private string $routeColor;
-    private string $routeTextColor;
-    private string $stopLat;
-    private string $stopLon;
-    private string $shapeId;
-    private array $line;
+    // Note: properties must match DB columns for PDO Fetch Class
+    // Note: properties must be public for js leaflet
+    public ?string $parent_station = null;
+    public ?int $endstation_id = null; // derived from parent_station
+    public ?string $trip_headsign = null;
+    public ?string $endstation_name = null; //derived from trip_headsign automatically
+    public ?string $route_short_name = null;
+    public ?int $direction_id = null;
+    public ?int $route_type = null;
+    public ?string $route_color = null;
+    public ?string $route_text_color = null;
+    public ?string $stop_lat = null;
+    public ?string $stop_lon = null;
+    public ?string $shape_id = null;
+    public ?string $line = null; // string to match DB - converted later with getLineAsArray()
     private static string $cacheFile = __DIR__ . '/../data/cache/rows.json';
 
-    public static array $superfluousStrings = [" Bhf"," (Berlin)"," (TF)"];
+    public static array $superfluousStrings = [" Bhf", " (Berlin)", " (TF)"];
 
     /**
-     * @param string $routeShortName Route name (human-readable name, e.g. S42)
-     * @param string $tripHeadsign Used as station name (destination as written on trains)
-     * @param string $parentStation Used as station ID (collects all stops at one station)
-     * @param int $routeType Route transit type (U or S-Bahn)
-     * @param string $routeColor Route color
-     * @param string $routeTextColor Route text color
-     * @param string $stopLat Stop latitude
-     * @param string $stopLon Stop longitude
-     * @param string $shapeId Shape ID of linestring
-     * @param array $line Linestring coordinates
+     * @param string $route_short_name Route name (human-readable name, e.g. S42)
+     * @param string $trip_headsign Used as station name (destination as written on trains)
+     * @param string $endstation_name Station name (cleaned version of trip_headsign)
+     * @param string $parent_station Used as station ID (collects all stops at one station)
+     * @param int $endstation_id Station ID (final part of parent_station)
+     * @param int $route_type Route transit type (U or S-Bahn)
+     * @param string $route_color Route color
+     * @param string $route_text_color Route text color
+     * @param string $stop_lat Stop latitude
+     * @param string $stop_lon Stop longitude
+     * @param string $shape_id Shape ID of linestring/polyline
+     * @param string $line Linestring coordinates
      */
     public function __construct(
-        string $routeShortName,
-        string $tripHeadsign,
-        string $parentStation,
-        int    $routeType,
-        string $routeColor,
-        string $routeTextColor,
-        string $stopLat,
-        string $stopLon,
-        string $shapeId,
-        array  $line
-    )
-    {
-        $this->stationId = self::deriveStationID($parentStation);
-        $this->stationName = self::deriveStationName($tripHeadsign);
-        $this->routeShortName = $routeShortName;
-        $this->tripHeadsign = $tripHeadsign;
-        $this->parentStation = $parentStation;
-        $this->routeType = $routeType;
-        $this->routeColor = $routeColor;
-        $this->routeTextColor = $routeTextColor;
-        $this->stopLat = $stopLat;
-        $this->stopLon = $stopLon;
-        $this->shapeId = $shapeId;
-        $this->line = $line;
-    }
-// transform input data to get station ID and name
-    private static function deriveStationId(string $parentStation): string
-    {
-        return (int) substr(strrchr($parentStation, ':'), 1);
+        ?string $route_short_name = null,
+        ?string $trip_headsign = null,
+        ?string $parent_station = null,
+        ?int    $route_type = null,
+        ?string $route_color = null,
+        ?string $route_text_color = null,
+        ?string $stop_lat = null,
+        ?string $stop_lon = null,
+        ?string $shape_id = null,
+        ?string $line = null,
+        ?int    $endstation_id = null
+    ) {
+        // ??= operator - only assign if currently null (needed for PDO object fetch)
+        $this->route_short_name ??= $route_short_name;
+        $this->trip_headsign ??= $trip_headsign;
+        $this->parent_station ??= $parent_station;
+        $this->route_type ??= $route_type;
+        $this->route_color ??= $route_color;
+        $this->route_text_color ??= $route_text_color;
+        $this->stop_lat ??= $stop_lat;
+        $this->stop_lon ??= $stop_lon;
+        $this->shape_id ??= $shape_id;
+        $this->line ??= $line;
+        $this->endstation_id ??= $endstation_id;
+
+        //  only derive when values not already in db
+        if ($this->endstation_id === null && $this->parent_station !== null) {
+            $this->endstation_id = self::deriveStationId($this->parent_station);
+        }
+        if ($this->endstation_name === null && $this->trip_headsign !== null) {
+            $this->endstation_name = self::deriveStationName($this->trip_headsign);
+        }
     }
 
-    public static function deriveStationName(string $tripHeadsign): string
+    // transform input data to get station ID and name, and to correct linestring/polyline array format - #TODO - fix line import format instead
+    private static function deriveStationId(string $parent_station): int
     {
-        return str_replace(self::$superfluousStrings, "", $tripHeadsign);
+        return (int)substr(strrchr($parent_station, ':'), 1);
     }
 
+    public static function deriveStationName(string $trip_headsign): string
+    {
+        return str_replace(self::$superfluousStrings, "", $trip_headsign);
+    }
+
+    public function getLineAsArray(): array
+    {
+        if (!$this->line) {
+            return [];
+        }
+        $json = (strpos($this->line, '[') === 0) ? $this->line : '[' . $this->line . ']';
+        return json_decode($json, true) ?? [];
+    }
 
     // single-attribute getters and setters
 
-    public function getStationId(): string
+    public function getStationId(): ?int
     {
-        return $this->stationId;
+        return $this->endstation_id;
     }
 
-    public function setStationId(string $stationId): void
+    public function setStationId(int $endstation_id): void
     {
-        $this->stationId = $stationId;
+        $this->endstation_id = $endstation_id;
     }
 
     public static function getAll(): array
@@ -89,151 +112,141 @@ class Station
 
     public function getRouteShortName(): string
     {
-        return $this->routeShortName;
+        return $this->route_short_name ?? "";
     }
 
-    public function setRouteShortName(string $routeShortName): void
+    public function setRouteShortName(string $route_short_name): void
     {
-        $this->routeShortName = $routeShortName;
+        $this->route_short_name = $route_short_name;
     }
-
+    public function getDirectionId(): int
+    {
+        return $this->direction_id ?? 0;
+    }
     public function getTripHeadsign(): string
     {
-        return $this->tripHeadsign;
+        return $this->trip_headsign ?? "";
     }
 
-    public function setTripHeadsign(string $tripHeadsign): void
+    public function setTripHeadsign(string $trip_headsign): void
     {
-        $this->tripHeadsign = $tripHeadsign;
+        $this->trip_headsign = $trip_headsign;
     }
 
     public function getParentStation(): string
     {
-        return $this->parentStation;
+        return $this->parent_station ?? "";
     }
 
-    public function setParentStation(string $parentStation): void
+    public function setParentStation(string $parent_station): void
     {
-        $this->parentStation = $parentStation;
+        $this->parent_station = $parent_station;
     }
 
     public function getRouteType(): int
     {
-        return $this->routeType;
+        return $this->route_type ?? 0;
     }
 
-    public function setRouteType(int $routeType): void
+    public function setRouteType(int $route_type): void
     {
-        $this->routeType = $routeType;
+        $this->route_type = $route_type;
     }
 
     public function getRouteColor(): string
     {
-        return $this->routeColor;
+        return $this->route_color ?? "";
     }
 
-    public function setRouteColor(string $routeColor): void
+    public function setRouteColor(string $route_color): void
     {
-        $this->routeColor = $routeColor;
+        $this->route_color = $route_color;
     }
 
     public function getRouteTextColor(): string
     {
-        return $this->routeTextColor;
+        return $this->route_text_color ?? "";
     }
 
-    public function setRouteTextColor(string $routeTextColor): void
+    public function setRouteTextColor(string $route_text_color): void
     {
-        $this->routeTextColor = $routeTextColor;
+        $this->route_text_color = $route_text_color;
     }
 
     public function getStopLat(): string
     {
-        return $this->stopLat;
+        return $this->stop_lat ?? "";
     }
 
-    public function setStopLat(string $stopLat): void
+    public function setStopLat(string $stop_lat): void
     {
-        $this->stopLat = $stopLat;
+        $this->stop_lat = $stop_lat;
     }
 
     public function getStopLon(): string
     {
-        return $this->stopLon;
+        return $this->stop_lon ?? "";
     }
 
-    public function setStopLon(string $stopLon): void
+    public function setStopLon(string $stop_lon): void
     {
-        $this->stopLon = $stopLon;
+        $this->stop_lon = $stop_lon;
     }
 
     public function getShapeId(): string
     {
-        return $this->shapeId;
+        return $this->shape_id ?? "";
     }
 
-    public function setShapeId(string $shapeId): void
+    public function setShapeId(string $shape_id): void
     {
-        $this->shapeId = $shapeId;
+        $this->shape_id = $shape_id;
     }
 
-    public function getLine(): array
+    public function getLine(): string
     {
-        return $this->line;
+        return $this->line ?? "";
     }
 
-    public function setLine(array $line): void
+    public function setLine(string $line): void
     {
         $this->line = $line;
     }
 
     public function getStationName(): string
     {
-        return $this->stationName;
+        return $this->endstation_name ?? "";
     }
 
-    public function setStationName(string $stationName): void
+    public function setStationName(string $endstation_name): void
     {
-        $this->stationName = $stationName;
+        $this->endstation_name = $endstation_name;
     } //derived from parentStation automatically
 
-//other getters and CRUD functions
-    public static function getStationById (int $stationId): Station
+    //other getters and CRUD functions
+    public static function getStationById(int $endstation_id): ?self //can use self instead of Station - ie return an instance of the same class
     {
-        $s = null;
-        foreach (self::getAll() as $station) {
-            //echo $station->getStationId() . "<br>";
-            if ($station->getStationId() == $stationId) {
-                $s = $station;
-                break; //there is only 1 to find, no need to carry on looping
-            }
-        }
-        return $s;
+        $conn = DatabaseMain::getConnection();
+        $stmt = $conn->prepare("SELECT * FROM endstations WHERE endstation_id = ?");
+        $stmt->execute([$endstation_id]);
+        return $stmt->fetchObject(self::class) ?: null;
     }
 
-    public static function getStationByName (string $stationName): Station
+    public static function getStationByName(string $stationName): ?self
     {
-        $s = null;
-        foreach (self::getAll() as $station) {
-            if ($station->getStationName() === $stationName) {
-                $s = $station;
-                break; //there is only 1 to find, no need to carry on looping
-            }
-        }
-        return $s;
+        $conn = DatabaseMain::getConnection();
+        $stmt = $conn->prepare("SELECT * FROM endstations WHERE endstation_name = ?");
+        $stmt->execute([$stationName]);
+        return $stmt->fetchObject(self::class) ?: null;
     }
 
     public static function loadJSON(): ?array
     {
         if (file_exists(self::$cacheFile)) {
-
             $stationsArray = json_decode(file_get_contents(self::$cacheFile), true);
             //echo "<br>INFO: Cache file exists, reading from cache";
 
-            //clear central list of objects first
-            Station::$stationsStaticArr = [];
-
-            //create a new object from each item
+            // Loop remains for import logic, but we no longer store in a static array property
             foreach ($stationsArray as $s) {
                 $sNew = new Station(
                     $s['route_short_name'],
@@ -245,7 +258,7 @@ class Station
                     $s['stop_lat'],
                     $s['stop_lon'],
                     $s['shape_id'],
-                    [$s['line']] // Convert JSON string to array
+                    $s['line'] // Handled as string
                 );
             }
             return $stationsArray;
@@ -254,84 +267,94 @@ class Station
         }
     }
 
-    public static function loadData() : ?array
+    public static function loadData(): ?array
     {
-        //TODO: read from DB also
         //$rows = self::loadJSON();
-        $rows = DatabaseMain::getAll('endstations');
-        return $rows;
+        return Station::getAll();
     }
 
-//html generators
-    public static function generateTableHtml($rows): string {
-        $tableHtml = '<table>
-        <tr>
-            <th>Route</th>
-            <th></th>
-            <th>End station</th>
-            <th>Go!</th>';
-        global $user_id;
-        if (isset($user_id)) {
-            $tableHtml .= '<th>visited</th>';}
-        $tableHtml .= '</tr>';
+    //html generators
+    /**
+     * generates html table for stations using station objects
+     */
+    /**
+     * generates html table for stations by fetching data internally via getall()
+     */
+    /**
+     * generates html table for stations
+     */
+    public static function generateStationTableHtml(?int $target_user_id = null): string
+    {
+        // fetch the array of station objects directly
+        $stations = self::getAll();
 
-        //generate columns 1-4, or 1-5 if user logged in
-        if (count($rows) > 0) {
-            foreach ($rows as $row) {
-                // 1. Route names and colors
+        $tableHtml = '<table>
+    <thead>
+        <tr>
+            <th>route</th>
+            <th></th>
+            <th>end station</th>
+            <th>go!</th>';
+
+        if ($target_user_id !== null) {
+            $tableHtml .= '<th>visited</th>';
+        }
+        $tableHtml .= '</tr></thead><tbody>';
+
+        if (count($stations) > 0) {
+            foreach ($stations as $station) {
+                $routeColor = "#" . ltrim($station->getRouteColor(), '#');
+                $textColor = "#" . ltrim($station->getRouteTextColor(), '#');
+
                 $tableHtml .= "<tr>"
-                    . "<td bgcolor='" . htmlspecialchars($row['route_color'])
-                    . "' style='text-align:center;color:#" . htmlspecialchars($row['route_text_color']) . ";'>"
-                    . htmlspecialchars($row['route_short_name']) . " -" . $row['direction_id'] . "</td>"
+                    . "<td style='background-color: $routeColor; text-align:center; color: $textColor;'>"
+                    . htmlspecialchars($station->getRouteShortName()) . "</td>"
                     . "<td style='text-align:center;'>";
 
-                // 2. Service logos
-                if ($row['route_type'] == 109) {
-                    $tableHtml .= '<img src="assets/img/s-bahn-logo.png" alt="S-Bahn" style="height:22px;">';
-                } elseif ($row['route_type'] == 400) {
-                    $tableHtml .= '<img src="assets/img/u-bahn-logo.png" alt="U-Bahn" style="height:22px;">';
+                // transit type logos
+                if ($station->getRouteType() == 109) {
+                    $tableHtml .= '<img src="assets/img/s-bahn-logo.png" alt="s-bahn" style="height:22px;">';
+                } elseif ($station->getRouteType() == 400) {
+                    $tableHtml .= '<img src="assets/img/u-bahn-logo.png" alt="u-bahn" style="height:22px;">';
                 } else {
-                    $tableHtml .= htmlspecialchars($row['route_type']);
+                    $tableHtml .= htmlspecialchars((string)$station->getRouteType());
                 }
 
-                // 3. Station name (cleaned Headsign) formatted depending on transit type
-                $stationName = str_replace(self::$superfluousStrings, "", $row['trip_headsign']);
-                $endstation_id = $row['endstation_id'];
                 $tableHtml .= "</td>"
-                    . "<td class='destination-cell' style='color:" . ($row['route_type'] == 400 ? '#f5f5f5' : 'yellow') . ";'>"
-                    . "<a href ='index.php?view=showStation&station_id=$endstation_id'> "
-                    . htmlspecialchars($stationName)
+                    . "<td class='destination-cell' style='color:" . ($station->getRouteType() == 400 ? '#f5f5f5' : 'yellow') . ";'>"
+                    . "<a href='index.php?view=showStation&station_id=" . $station->getStationId() . "'> "
+                    . htmlspecialchars($station->getStationName())
                     . "</a></td>";
 
-                // 4. Google directions button
-                $lat = htmlspecialchars($row['stop_lat']);
-                $lon = htmlspecialchars($row['stop_lon']);
+                // google directions integration
+                $lat = urlencode($station->getStopLat());
+                $lon = urlencode($station->getStopLon());
                 $directionsUrl = "https://www.google.com/maps/dir/?api=1&destination={$lat},{$lon}&travelmode=transit";
-                $directionsTitle='plan journey on Google Maps';
-                $tableHtml .= "<td><a href='$directionsUrl' target='_blank' title='$directionsTitle'><img height=16px src='./assets/img/directions-transit-32.png'></a></td>";
+                $tableHtml .= "<td><a href='$directionsUrl' target='_blank' title='plan journey on google maps'><img height='16px' src='./assets/img/directions-transit-32.png'></a></td>";
 
-                // 5. User visited staus if logged in
-                $tableHtml .= "<td>";
-                $userHasVisited = rand(0,1); //#TODO test display of different states before making checker function #TEST
-                global $user_id;
-                if(isset($user_id)) {
+                // visited status column
+                if ($target_user_id !== null) {
+                    $tableHtml .= "<td style='text-align:center;'>";
+                    // todo: replace rand() with actual visit check logic
+                    $userHasVisited = rand(0, 1);
                     if ($userHasVisited == 1) {
-                    $tableHtml .= "X";}
+                        $tableHtml .= "✔";
+                    }
+                    $tableHtml .= "</td>";
                 }
-                $tableHtml .= "</td>";
 
-                // 6. Close the row
                 $tableHtml .= "</tr>";
             }
         } else {
-            $tableHtml .= "<tr><td colspan='4'>0 results</td></tr>";
+            $cols = $target_user_id !== null ? 5 : 4;
+            $tableHtml .= "<tr><td colspan='$cols'>0 results found</td></tr>";
         }
 
-        $tableHtml .= '</table>';
+        $tableHtml .= '</tbody></table>';
         return $tableHtml;
     }
 
-    public static function makeSelectOption (): string
+    public static function makeSelectOption(): string
     {
         $htmlString = '<select name="StationId" id="Station">';
         foreach (self::getAll() as $station) { // display the name but submit the ID value
