@@ -1,18 +1,30 @@
 <?php
+// $visit_id is provided by index.php
 
-spl_autoload_register(function ($class) {
-    include '../classes/' . $class . '.php';
-});
+if (!$visit_id) {
+    echo "<p>error: no visit id provided</p>";
+    return;
+}
 
-$visit_id = $_GET['visit_id'];
+// get the specific visit object
+$visit = Visit::getVisitById((int)$visit_id);
 
-foreach (DatabaseMain::getAll('visits') as $visit) {
-    if ($visit['visit_id'] == $visit_id) {
-        //print_r($visit);
-        $endstation_name = Station::getStationById($visit['endstation_id'])->getStationName();
-        echo "<h2>Visit to " . $endstation_name . " on " . date('j M Y', strtotime($visit['visit_datetime'])) . "</h2>";
-        echo "<p>User ID: " . $visit['user_id'] . "</p>";
-        echo "<p>Guests: " . ($visit['guest_ids']?? 'none') . "</p>";
-        echo "<p>Date and time: " . $visit['visit_datetime'] . "</p>";
+if ($visit) {
+    // retrieve the linked station object to get the name
+    $station = Station::getStationById($visit->getStationId());
+    $endstation_name = $station ? $station->getStationName() : "unknown station";
+
+    echo "<h2>visit to " . htmlspecialchars($endstation_name) . " on " . date('j M Y', strtotime($visit->getVisitDatetime())) . "</h2>";
+    echo "<p>user id: " . $visit->getUserId() . "</p>";
+
+    $guests = $visit->getGuestIds();
+    echo "<p>guests: " . (!empty($guests) ? implode(", ", $guests) : 'none') . "</p>";
+
+    echo "<p>date and time: " . htmlspecialchars($visit->getVisitDatetime()) . "</p>";
+
+    if ($visit->getNotes()) {
+        echo "<p>notes: " . nl2br(htmlspecialchars($visit->getNotes())) . "</p>";
     }
+} else {
+    echo "<p>error: visit not found</p>";
 }

@@ -1,70 +1,76 @@
 <?php
-spl_autoload_register(function ($class) {
-    include '../classes/' . $class . '.php';
-});
+$target_user_id = $_GET['user_id'] ?? null;
 
-$user_id = $_GET['user_id'];
-$user = DatabaseMain::getbyID($user_id, 'users');
-$visitsFromDB = DatabaseMain::getAll('visits');
-$visitsByUser = [];
-foreach ($visitsFromDB as $visit) {
-    if ($visit['user_id'] == $user_id) {
-        $visitsByUser[] = $visit;
-    }
+if (!$target_user_id) {
+    echo "<p>error: user id not provided</p>";
+    return;
 }
 
-//user card
-echo "<div class='container'>";
-echo "<div class='table-wrapper'>";
+$target_user = User::getUserById((int)$target_user_id);
 
-echo "<h2>User: " . $user['username'] . "</h2>";
-echo "Joined on " . date('j M Y', strtotime($user['join_date'])) . "<br>";
-echo "<img src='/assets/img/profile/" . $user['profile_picture'] . "' width='200'><br>";
-
-//echo "<a href='index.php?view=editUser&user_id=$user[user_id]'><button>Edit</button></a>"; //later: let users edit own profile
-echo "</div>";
-
-
-//user visits
-echo "<div class='table-wrapper'>";
-
-echo "<h2>". $user['username'] . "'s visits</h2>";
-echo "<table>";
-echo "<tr>";
-echo "<th>Date</th><th>Station</th><th>Route</th><th>Guests</th>";
-echo "</tr>";
-
-foreach ($visitsByUser as $visit) {
-    $visit_id = $visit['visit_id'];
-    $visit_date = date('j M Y', strtotime($visit['visit_datetime']));
-    $station_id = $visit['endstation_id'];
-    $station_visited = DatabaseMain::getByID($station_id, 'endstations');
-    $station_name = $station_visited['trip_headsign'];
-    $route = $station_visited['route_short_name'];
-
-    //var_dump($station_visited); //get line and name via id from here
-    echo "<td><a href='index.php?view=showVisit&visit_id=$visit_id'>" . $visit_date . "</a>";
-    echo "<td><a href='index.php?view=showStation&station_id=$station_id'>" . $station_name . "</a>";
-    echo "<td>" . $route . "</td>";
-    echo "<td>" . "TODO: list guests" . "</td>";
-    echo "</tr>";
+if (!$target_user) {
+    echo "<p>error: user not found.</p>";
+    return;
 }
 
-echo "</table>";
-echo "</div>";
+// get user's visits
+$visitsByUser = Visit::getVisitsByUserId($target_user->getUserId());
 
-
-
-
-
-
-//TODO: take directly from object array
-//foreach (User::getUsersStaticArr() as $user) {
-//    if ($user->getId() == $id) {
-//        echo "<h2>User: " . $user->getUserName() . "</h2>";
-//        echo "Joined on " . $user->getJoinedDate() . "<br>";
-//        echo "<img src='" . $user->getProfilePicture() . "'><br>";
-//    }
-//}
-
+// #TODO: combine with Visit::generate...
 ?>
+
+<div class="container">
+    <!-- user profile card -->
+    <div class="table-wrapper">
+        <h2>user: <?= htmlspecialchars($target_user->getUsername()) ?></h2>
+        <p>joined on <?= date('j M Y', strtotime($target_user->getJoindate())) ?></p>
+        <img src="/assets/img/profile/<?= htmlspecialchars($target_user->getProfilePicture()) ?>"
+             alt="profile picture"
+             style="width: 200px; border-radius: 4px;">
+    </div>
+
+    <!-- user visits history -->
+    <div class="table-wrapper">
+        <h3><?= htmlspecialchars($target_user->getUsername()) ?>'s visits</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>date</th>
+                <th>station</th>
+                <th>route</th>
+                <th>guests</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php if (empty($visitsByUser)): ?>
+                <tr><td colspan="4">no visits recorded yet</td></tr>
+            <?php else: ?>
+                <?php foreach ($visitsByUser as $visit): ?>
+                    <?php
+                    $station = Station::getStationById($visit->getStationId());
+                    ?>
+                    <tr>
+                        <td>
+                            <a href="index.php?view=showVisit&visit_id=<?= $visit->getVisitId() ?>">
+                                <?= date('j M Y', strtotime($visit->getVisitDatetime())) ?>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="index.php?view=showStation&station_id=<?= $visit->getStationId() ?>">
+                                <?= htmlspecialchars($station ? $station->getStationName() : "unknown") ?>
+                            </a>
+                        </td>
+                        <td><?= htmlspecialchars($station ? $station->getRouteShortName() : "n/a") ?></td>
+                        <td>
+                            <?php
+                            $guests = $visit->getGuestIds();
+                            echo !empty($guests) ? htmlspecialchars(implode(", ", $guests)) : "none";
+                            ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
