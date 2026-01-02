@@ -285,16 +285,13 @@ class Station
      */
     public static function generateStationTableHtml(?int $target_user_id = null): string
     {
-        // fetch the array of station objects directly
         $stations = self::getAll();
 
-        $tableHtml = '<table>
-    <thead>
-        <tr>
-            <th>route</th>
-            <th></th>
-            <th>end station</th>
-            <th>go!</th>';
+        $tableHtml = '<table><thead><tr>
+        <th>route</th>
+        <th></th>
+        <th>end station</th>
+        <th>go!</th>';
 
         if ($target_user_id !== null) {
             $tableHtml .= '<th>visited</th>';
@@ -311,7 +308,6 @@ class Station
                     . htmlspecialchars($station->getRouteShortName()) . "</td>"
                     . "<td style='text-align:center;'>";
 
-                // transit type logos
                 if ($station->getRouteType() == 109) {
                     $tableHtml .= '<img src="assets/img/s-bahn-logo.png" alt="s-bahn" style="height:22px;">';
                 } elseif ($station->getRouteType() == 400) {
@@ -326,19 +322,18 @@ class Station
                     . htmlspecialchars($station->getStationName())
                     . "</a></td>";
 
-                // google directions integration
                 $lat = urlencode($station->getStopLat());
                 $lon = urlencode($station->getStopLon());
                 $directionsUrl = "https://www.google.com/maps/dir/?api=1&destination={$lat},{$lon}&travelmode=transit";
                 $tableHtml .= "<td><a href='$directionsUrl' target='_blank' title='plan journey on google maps'><img height='16px' src='./assets/img/directions-transit-32.png'></a></td>";
 
-                // visited status column
+                // real visit check logic
                 if ($target_user_id !== null) {
                     $tableHtml .= "<td style='text-align:center;'>";
-                    // todo: replace rand() with actual visit check logic
-                    $userHasVisited = rand(0, 1);
-                    if ($userHasVisited == 1) {
+                    if (Visit::hasUserVisitedStation($target_user_id, (int)$station->getStationId())) {
                         $tableHtml .= "✔";
+                    } else {
+                        $tableHtml .= "<span style='color: #ccc;'>-</span>";
                     }
                     $tableHtml .= "</td>";
                 }

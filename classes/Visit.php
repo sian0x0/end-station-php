@@ -167,6 +167,15 @@ class Visit
         $stmt->execute([$id]);
     }
 
+//aggrgegations
+    public static function hasUserVisitedStation(int $user_id, int $station_id): bool
+    {
+        $conn = DatabaseMain::getConnection();
+        $sql = "SELECT COUNT(*) FROM visits WHERE user_id = ? AND endstation_id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$user_id, $station_id]); //user ordered placeholders instead of :variables
+        return (int)$stmt->fetchColumn() > 0;
+    }
 
 
 //html rendering
