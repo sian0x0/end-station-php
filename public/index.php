@@ -1,12 +1,13 @@
 <?php
-// session_start(); // todo: re-implement user login
+//session_start(); // todo: re-implement user login
+$logged_in_user_id = 2; // testing login bypass
+
 require __DIR__ . '/../config/config.php';
 
 spl_autoload_register(function (string $class) {
     include '../classes/' . $class . '.php';
 });
 
-$logged_in_user_id = 2; // testing login bypass
 
 $view = !empty($_GET['view']) ? $_GET['view'] : 'showDashboard'; //default
 
