@@ -37,12 +37,68 @@
       margin-bottom: 0.5rem;
     }
 
+/* buttons and form elements */
     button {
-        background-color:rgb(228, 108, 43);
+        background-color: rgb(228, 108, 43);
         color: white;
-        /* display: inline-block; */
+        padding: 0.8rem 1.8rem;
+        border-radius: 1rem;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        font-family: inherit;
+        font-size: 1rem;
+        transition: background-color 0.2s ease;
     }
 
+    button:hover {
+        background-color: rgb(200, 90, 35);
+    }
+
+    button:disabled {
+        background-color: #ccc;
+        color: #666;
+        cursor: not-allowed;
+    }
+
+    /* grey button for cancel-type actions */
+    .btn-secondary {
+        background-color: #666;
+    }
+
+    .btn-secondary:hover {
+        background-color: #444;
+    }
+
+    /* layout for form containers */
+    .visit-form input,
+    .visit-form select,
+    .visit-form textarea {
+        width: 100%;
+        box-sizing: border-box;
+        border-radius: 1rem;
+        padding: 0.8rem;
+        border: 1px solid #ccc;
+        font-family: inherit;
+        margin-top: 0.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        font-weight: bold;
+        display: block;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 0.8rem;
+        margin-top: 1rem;
+    }
+
+/* general containers */
     .container {
       display: flex;
       gap: 1.25rem; 
@@ -53,7 +109,7 @@
 
     .table-wrapper {
        /*max-width: 700px; */
-      overflow: auto; /* allows scrolling if table grows too tall */
+      overflow: auto; /* allows scrolling if table gets too tall */
       background: #f2f2f2;
       padding: 1rem;
       border-radius: 2rem;

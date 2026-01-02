@@ -1,5 +1,5 @@
 <?php
-// variables $visit_id, $user_id, and $station_id are provided by index.php
+// variables $visit_id, $logged_in_user_id, and $station_id are provided by index.php
 
 if ($view === 'editVisit' && $visit_id) {
     // mode: edit existing visit
@@ -22,7 +22,8 @@ $html_datetime = date('Y-m-d\TH:i', strtotime($visit->getVisitDatetime()));
 ?>
 
 <div class="container">
-    <h2><?= htmlspecialchars($form_title) ?></h2>
+    <div class="table-wrapper" style="max-width: 600px; width: 100%;">
+        <h2><?= htmlspecialchars($form_title) ?></h2>
 
     <form action="index.php?view=saveVisit" method="post" class="visit-form">
         <!-- hidden field to track if we are updating or inserting -->
@@ -50,30 +51,32 @@ $html_datetime = date('Y-m-d\TH:i', strtotime($visit->getVisitDatetime()));
         </div>
 
         <div class="form-group">
-            <label for="guest_ids">guests (multi-select):</label>
+            <label for="guest_ids">guests:</label>
             <?= User::makeSelectOption(
                 users: User::getAll(),
-                name: "guest_ids[]",
                 selectedIds: $visit->getGuestIds(),
                 excludeId: (int)$logged_in_user_id
             ) ?>
             <small>hold ctrl/cmd to select multiple</small>
         </div>
 
-        <div class="form-group">
-            <label for="photo">photo url:</label>
-            <input type="text" name="photo" id="photo"
-                   value="<?= htmlspecialchars($visit->getPhoto()) ?>">
-        </div>
+            <div class="form-group">
+                <label for="photo">photo url:</label>
+                <input type="text" name="photo" id="photo"
+                       value="<?= htmlspecialchars($visit->getPhoto()) ?>">
+            </div>
 
-        <div class="form-group">
-            <label for="notes">notes:</label>
-            <textarea name="notes" id="notes" rows="4"><?= htmlspecialchars($visit->getNotes()) ?></textarea>
-        </div>
+            <div class="form-group">
+                <label for="notes">notes:</label>
+                <textarea name="notes" id="notes" rows="4"><?= htmlspecialchars($visit->getNotes()) ?></textarea>
+            </div>
 
-        <div class="form-actions">
-            <button type="submit" class="btn-save">save visit</button>
-            <a href="index.php?view=showDashboard"><button type="button">cancel</button></a>
-        </div>
-    </form>
+            <div class="form-actions">
+                <button type="submit">save visit</button>
+                <a href="index.php?view=showDashboard">
+                    <button type="button" class="btn-secondary">cancel</button>
+                </a>
+            </div>
+        </form>
+    </div>
 </div>
