@@ -17,8 +17,25 @@ if ($visit) {
     echo "<h2>visit to " . htmlspecialchars($endstation_name) . " on " . date('j M Y', strtotime($visit->getVisitDatetime())) . "</h2>";
     echo "<p>user id: " . $visit->getUserId() . "</p>";
 
-    $guests = $visit->getGuestIds();
-    echo "<p>guests: " . (!empty($guests) ? implode(", ", $guests) : 'none') . "</p>";
+    // resolve guest ids into names
+    $guestIds = $visit->getGuestIds();
+    $guestDisplay = 'none';
+
+    if (!empty($guestIds)) {
+        $guestNames = [];
+        foreach ($guestIds as $id) {
+            $guestUser = User::getUserById((int)$id);
+            if ($guestUser) {
+                $guestNames[] = htmlspecialchars($guestUser->getUsername());
+            } else {
+                // handle case where user id in visit doesn't exist in user table (eg deleted) #TODO: implement this everywhere - make method
+                $guestNames[] = "user #" . htmlspecialchars((string)$id);
+            }
+        }
+        $guestDisplay = implode(", ", $guestNames);
+    }
+
+    echo "<p>guests: " . $guestDisplay . "</p>";
 
     echo "<p>date and time: " . htmlspecialchars($visit->getVisitDatetime()) . "</p>";
 
