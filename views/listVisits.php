@@ -4,8 +4,8 @@ $visits = Visit::getAll();
 ?>
 
 <div class="container">
-    <h2>Visits</h2>
-    <div class="table-wrapper">
+    <div class="text-container">
+        <h2>All EndStation visits</h2>
         <?= Visit::generateTableHtml($visits) ?>
     </div>
 </div>

@@ -182,7 +182,7 @@ class Visit
     public static function generateTableHtml(array $visits): string
     {
         $html = "<table class='users-table'>";
-        $html .= "<tr><th>id</th><th>date</th><th>station</th><th>route</th><th>visitor</th><th>guests</th></tr>";
+        $html .= "<tr><th>id</th><th>date</th><th>station</th><th>route</th><th>user</th><th>guests</th></tr>";
 
         foreach ($visits as $visit) {
             $visit_id = $visit->getVisitId();
@@ -198,11 +198,22 @@ class Visit
             $html .= "<td><a href='index.php?view=showVisit&visit_id=$visit_id'>" . $date . "</a></td>";
             $html .= "<td><a href='index.php?view=showStation&station_id=" . $visit->getStationId() . "'>" . htmlspecialchars($name) . "</a></td>";
             $html .= "<td>" . htmlspecialchars($route) . "</td>";
-            $html .= "<td><strong>" . $visit->getUserId() . "</strong></td>";
+            $html .= "<td><strong>" . User::getUserById($visit->getUserId())->getUsername() . "</strong></td>";
 
             // handle guest display logic
-            $guests = $visit->getGuestIds();
-            $html .= "<td>" . (!empty($guests) ? count($guests) . " guests" : "none") . "</td>";
+            $guestIds = $visit->getGuestIds();
+            $guestNames = [];
+
+            if (!empty($guestIds)) {
+                foreach ($guestIds as $id) {
+                    $guestUser = User::getUserById((int)$id);
+                    if ($guestUser) {
+                        $guestNames[] = htmlspecialchars($guestUser->getUsername());
+                    }
+                }
+            }
+
+            $html .= "<td>" . (!empty($guestNames) ? implode(", ", $guestNames) : "none") . "</td>";
             $html .= "</tr>";
         }
 
