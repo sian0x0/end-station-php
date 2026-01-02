@@ -17,7 +17,7 @@
     </div>
 
     <ul>
-        <li><a href="index.php?view=editVisit">add visit</a></li>
+        <li><a href="index.php?view=editAddVisit">add visit</a></li>
         <li>view:
             <ul>
                 <li><a href="index.php?view=showDashboard">dashboard</a></li>
