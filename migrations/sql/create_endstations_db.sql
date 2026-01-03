@@ -3,7 +3,7 @@
 
 #DROP TABLE endstation_db.endstations;
 
-#TODO: reinstate this when main DB working again
+#TODO: reinstate this when VBB GTFS DB working again
 #CREATE TABLE endstation_db.endstations LIKE VBB_GTFS.endstations;
 #INSERT INTO endstation_db.endstations
 ##SELECT * FROM VBB_GTFS.endstations;
@@ -12,9 +12,9 @@ USE endstation_db;
 
 ## ADD TEST DATA for users and visits --stations comes from JSON -- TODO: stations must come before visits when FKs implemented
 INSERT INTO users (user_id, username, password, join_date, profile_picture, role) VALUES
-     (1, 'admin', 'hashed_password_123', '2025-05-15', '1.jpg', 1),
-     (2, 'lou', 'hashed_password_456', '2025-07-22', '2.jpg', 2),
-     (3, 'vullnet', 'hashed_password_789', '2025-09-10', '3.jpg', 2);
+     (1, 'admin', '$2y$10$jU4yKmRPl0cqTti/LeI3HOL/oy12nyHAlWnEnRF6ahZdOv3hHcqva', '2025-05-15', '1.jpg', 1),
+     (2, 'lou', '$2y$10$UTWwQGn9wbJZGFGc0z7MwOAEAK3VvC6YOMOX2Y54dCy0aV7SCLmRO', '2025-07-22', '2.jpg', 2),
+     (3, 'vullnet', '$2y$10$cl6ng.EVDcNgzWnmDuQXQejv7RtPOQ1sADXqSV43cjs24Lrby/JEy', '2025-09-10', '3.jpg', 2);
 
 INSERT INTO visits (user_id, endstation_id, visit_datetime, photo, notes) VALUES
 (1, 900350160, '2025-06-12 09:15:00', NULL, NULL),

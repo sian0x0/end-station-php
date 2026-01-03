@@ -1,6 +1,6 @@
 <?php
-//session_start(); // todo: re-implement user login
-$logged_in_user_id = 2; // testing login bypass
+session_start(); // todo: re-implement user login
+//$logged_in_user_id = 2; // testing login bypass
 
 require __DIR__ . '/../config/config.php';
 
@@ -8,6 +8,31 @@ spl_autoload_register(function (string $class) {
     include '../classes/' . $class . '.php';
 });
 
+// handle logout
+if (isset($_POST['logout'])) {
+    User::log_user_out();
+    header("Location: index.php");
+    exit;
+}
+
+// handle login submission
+if (isset($_POST['username']) && isset($_POST['password'])) {
+    $user = User::authenticate($_POST['username'], $_POST['password']);
+
+    if ($user) {
+        User::log_user_in($user->getUserId());
+        header("Location: index.php?view=showDashboard");
+        exit;
+    } else {
+        $_SESSION["error"] = "wrong username or password.";
+        header("Location: index.php?view=login");
+        exit;
+    }
+}
+
+// get logged in user/id (source of truth?)
+$logged_in_user_id = User::get_logged_in_user_id();
+$logged_in_user = $logged_in_user_id ? User::getUserById($logged_in_user_id) : null;
 
 $view = !empty($_GET['view']) ? $_GET['view'] : 'showDashboard'; //default
 

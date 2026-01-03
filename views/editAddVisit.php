@@ -1,5 +1,13 @@
 <?php
 // variables $visit_id, $logged_in_user_id, and $station_id are provided by index.php
+if (!isset($logged_in_user)) {
+    echo
+    "<div class='text-container'>
+        <a href='index.php?view=login'>
+            <button style='padding: 5px 10px; font-size: 0.8rem';>log in</button>
+        </a> to record your visits
+    </div>";
+} else {
 
 if ($view === 'editVisit' && $visit_id) {
     // mode: edit existing visit
@@ -80,3 +88,4 @@ $html_datetime = date('Y-m-d\TH:i', strtotime($visit->getVisitDatetime()));
         </form>
     </div>
 </div>
+<?php } ?>

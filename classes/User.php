@@ -77,9 +77,6 @@ class User
         $this->username = $username;
     }
 
-    /**
-     * Updated to use proper property names: user_id and username
-     */
     public static function makeSelectOption(
         array $users,
         string $name = "guest_ids[]",
@@ -199,4 +196,37 @@ class User
         $html .= "</tbody></table>";
         return $html;
     }
+
+// authentication
+    public static function authenticate(string $username, string $password): ?User
+    {
+        $conn = DatabaseMain::getConnection();
+        $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->execute([trim($username)]);
+
+        // fetch as an instance of this class (not array)
+        $user = $stmt->fetchObject(self::class);
+
+        if ($user && password_verify(trim($password), $user->password)) {
+            return $user;
+        }
+        return null;
+    }
+
+    public static function log_user_in(int $user_id): void
+    {
+        session_regenerate_id(true);
+        $_SESSION["logged_in_user_id"] = $user_id;
+    }
+
+    public static function log_user_out(): void
+    {
+        $_SESSION["logged_in_user_id"] = null;
+    }
+
+    public static function get_logged_in_user_id(): ?int
+    {
+        return isset($_SESSION["logged_in_user_id"]) ? (int)$_SESSION["logged_in_user_id"] : null;
+    }
+
 }
